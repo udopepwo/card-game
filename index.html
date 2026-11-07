@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Карточный Клуб</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Подключаем MQTT для стабильной связи через публичный сервер -->
-    <script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -105,7 +103,7 @@
         let myName = tg.initDataUnsafe?.user?.first_name || ("Игрок_" + Math.floor(Math.random()*100));
         document.getElementById('user-greeting').innerText = "Игрок: " + myName;
 
-        let mqttClient = null;
+        let ws = null;
         let currentRoomCode = null;
 
         function setStatus(text) {
@@ -126,64 +124,79 @@
             document.getElementById('menu-screen').style.display = 'block';
             document.getElementById('game-screen').style.display = 'none';
             setStatus("Статус: Главное меню");
-            if (mqttClient) {
-                mqttClient.end();
-                mqttClient = null;
+            if (ws) {
+                ws.close();
+                ws = null;
             }
         }
 
-        function connectMqtt(onReady) {
-            if (mqttClient && mqttClient.connected) {
-                onReady();
-                return;
-            }
-            mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
-                clientId: 'cardgame_' + Math.random().toString(16).substring(2, 8)
-            });
+        function initWebSocket(onOpenCallback) {
+            // Используем публичный защищенный WebSocket на стандартном порту 443
+            ws = new WebSocket('wss://demo.piesocket.com/v3/room_cardgame?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self=1');
 
-            mqttClient.on('connect', () => {
-                onReady();
-            });
+            ws.onopen = () => {
+                onOpenCallback();
+            };
 
-            mqttClient.on('error', (err) => {
-                setStatus("Ошибка связи с сервером");
+            ws.onerror = (err) => {
+                setStatus("Ошибка связи: проверьте интернет");
                 console.error(err);
-            });
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleServerMessage(data);
+                } catch(e) {}
+            };
         }
 
-        // Создание комнаты (Хост)
+        let roomData = { host: null, guest: null, code: null };
+
+        function handleServerMessage(data) {
+            if (!currentRoomCode) return;
+
+            if (data.room === currentRoomCode) {
+                if (data.type === 'create') {
+                    roomData.host = data.name;
+                    showGameScreen(roomData.host, roomData.guest);
+                } else if (data.type === 'join') {
+                    roomData.guest = data.name;
+                    showGameScreen(roomData.host, roomData.guest);
+                    // Отвечаем хосту, что гость в сборе
+                    ws.send(JSON.stringify({
+                        room: currentRoomCode,
+                        type: 'sync',
+                        host: roomData.host,
+                        guest: roomData.guest
+                    }));
+                } else if (data.type === 'sync') {
+                    roomData.host = data.host;
+                    roomData.guest = data.guest;
+                    showGameScreen(roomData.host, roomData.guest);
+                }
+            }
+        }
+
         function createRoom() {
             const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
             currentRoomCode = randomCode;
+            roomData = { host: myName, guest: null, code: randomCode };
 
-            setStatus("Подключение...");
+            setStatus("Подключение к серверу...");
 
-            connectMqtt(() => {
+            initWebSocket(() => {
                 setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
                 showGameScreen(myName, null);
 
-                const guestTopic = `cardgame/room/${randomCode}/guest`;
-                mqttClient.subscribe(guestTopic);
-
-                mqttClient.on('message', (topic, payload) => {
-                    if (topic === guestTopic) {
-                        try {
-                            const data = JSON.parse(payload.toString());
-                            if (data.type === 'join') {
-                                showGameScreen(myName, data.name);
-                                // Отправляем подтверждение гостю
-                                mqttClient.publish(`cardgame/room/${randomCode}/host`, JSON.stringify({
-                                    type: 'welcome',
-                                    hostName: myName
-                                }));
-                            }
-                        } catch(e) { console.error(e); }
-                    }
-                });
+                ws.send(JSON.stringify({
+                    room: randomCode,
+                    type: 'create',
+                    name: myName
+                }));
             });
         }
 
-        // Вход в комнату (Гость)
         function joinRoom() {
             const codeInput = document.getElementById('room-code').value.trim();
             if (codeInput.length !== 4) {
@@ -194,29 +207,13 @@
             currentRoomCode = codeInput;
             setStatus("Подключение к комнате " + codeInput + "...");
 
-            connectMqtt(() => {
-                const hostTopic = `cardgame/room/${codeInput}/host`;
-                const guestTopic = `cardgame/room/${codeInput}/guest`;
-
-                mqttClient.subscribe(hostTopic);
-
-                // Отправляем сигнал о входе
-                mqttClient.publish(guestTopic, JSON.stringify({
+            initWebSocket(() => {
+                ws.send(JSON.stringify({
+                    room: codeInput,
                     type: 'join',
                     name: myName
                 }));
-
-                mqttClient.on('message', (topic, payload) => {
-                    if (topic === hostTopic) {
-                        try {
-                            const data = JSON.parse(payload.toString());
-                            if (data.type === 'welcome') {
-                                setStatus("<span style='color: #4caf50;'>Успешный вход!</span>");
-                                showGameScreen(data.hostName, myName);
-                            }
-                        } catch(e) { console.error(e); }
-                    }
-                });
+                setStatus("<span style='color: #4caf50;'>Запрос отправлен...</span>");
             });
         }
 
