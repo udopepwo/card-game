@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игровой Клуб</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1c2b36;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h2 { color: #4caf50; }
+        .card-table {
+            background: #2e7d32;
+            border: 4px solid #1b5e20;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 400px;
+            min-height: 150px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+        button {
+            background: #2481cc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+        }
+        input {
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            text-align: center;
+            width: 70%;
+            max-width: 200px;
+            margin-bottom: 10px;
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px auto;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>♣️ Игровой Клуб с друзьями ♠️</h2>
+    <p id="user-greeting">Загрузка...</p>
+
+    <div class="card-table">
+        <div id="game-status">Статус: Ожидание действий...</div>
+    </div>
+
+    <div class="section">
+        <button onclick="createRoom()">Создать комнату</button>
+    </div>
+
+    <div class="section">
+        <input type="text" id="room-code" placeholder="Код из 4 цифр" maxlength="4">
+        <br>
+        <button onclick="joinRoom()">Войти в комнату</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        let userName = tg.initDataUnsafe?.user?.first_name || "Игрок";
+        document.getElementById('user-greeting').innerText = "Привет, " + userName + "!";
+
+        let peer = null;
+        let conn = null;
+
+        function createRoom() {
+            const randomCode = Math.floor(1000 + Math.random() * 9000);
+            const fullId = "friend-game-" + randomCode;
+
+            peer = new Peer(fullId);
+
+            peer.on('open', () => {
+                document.getElementById('game-status').innerHTML = 
+                    `Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br>Ждем подключения...`;
+            });
+
+            peer.on('connection', (connection) => {
+                conn = connection;
+                setupConnection();
+                document.getElementById('game-status').innerHTML = 
+                    `<span style="color: #4caf50;">Друг успешно подключился!</span>`;
+            });
+        }
+
+        function joinRoom() {
+            const codeInput = document.getElementById('room-code').value.trim();
+            if (codeInput.length !== 4) return alert("Введи 4-значный код комнаты!");
+
+            peer = new Peer();
+            peer.on('open', () => {
+                document.getElementById('game-status').innerText = "Подключаемся...";
+                conn = peer.connect('friend-game-' + codeInput);
+                setupConnection();
+            });
+        }
+
+        function setupConnection() {
+            conn.on('open', () => {
+                document.getElementById('game-status').innerHTML = 
+                    `<span style="color: #4caf50; font-weight: bold;">Соединение установлено! Вы в игре.</span>`;
+            });
+
+            conn.on('data', (data) => {
+                alert("Получено от друга: " + data);
+            });
+        }
+    </script>
+</body>
+</html>
