@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игровой Клуб</title>
+    <title>Карточный Клуб</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
@@ -12,118 +12,181 @@
             background-color: #1c2b36;
             color: #ffffff;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
         }
-        h2 { color: #4caf50; }
+        h2 { color: #4caf50; margin-bottom: 5px; font-size: 22px; }
         .card-table {
             background: #2e7d32;
-            border: 4px solid #1b5e20;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 20px auto;
+            border: 3px solid #1b5e20;
+            border-radius: 14px;
+            padding: 15px;
+            margin: 15px auto;
             max-width: 400px;
-            min-height: 150px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            min-height: 120px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
         button {
             background: #2481cc;
             color: white;
             border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 15px;
+            border-radius: 8px;
             cursor: pointer;
-            margin: 10px;
+            margin: 8px;
             font-weight: bold;
         }
+        button:active { background: #1b639e; }
         input {
-            padding: 12px;
-            font-size: 18px;
+            padding: 10px;
+            font-size: 16px;
             border-radius: 8px;
             border: 1px solid #ccc;
             text-align: center;
-            width: 70%;
-            max-width: 200px;
-            margin-bottom: 10px;
+            width: 80%;
+            max-width: 220px;
+            margin-bottom: 8px;
+            background: #222;
+            color: #fff;
         }
         .section {
             background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px auto;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 10px auto;
             max-width: 400px;
+        }
+        #chat-box {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ffeb3b;
         }
     </style>
 </head>
 <body>
 
-    <h2>♣️ Игровой Клуб с друзьями ♠️</h2>
-    <p id="user-greeting">Загрузка...</p>
+    <h2>♣️ Карточный Клуб ♠️</h2>
+    <p id="user-greeting" style="font-size: 14px; color: #aaa;">Загрузка...</p>
 
     <div class="card-table">
-        <div id="game-status">Статус: Ожидание действий...</div>
+        <div id="game-status">Статус: Главное меню</div>
+        <div id="chat-box"></div>
     </div>
 
-    <div class="section">
-        <button onclick="createRoom()">Создать комнату</button>
+    <div id="menu-screen">
+        <div class="section">
+            <button onclick="createRoom()">Создать комнату</button>
+        </div>
+
+        <div class="section">
+            <input type="text" id="room-code" placeholder="Введите код из 4 цифр" maxlength="4">
+            <br>
+            <button onclick="joinRoom()">Войти в комнату</button>
+        </div>
     </div>
 
-    <div class="section">
-        <input type="text" id="room-code" placeholder="Код из 4 цифр" maxlength="4">
-        <br>
-        <button onclick="joinRoom()">Войти в комнату</button>
+    <div id="game-screen" style="display:none;">
+        <div class="section">
+            <h3>Стол игры</h3>
+            <p>Вы успешно подключены друг к другу!</p>
+            <button onclick="sendPing()">Тест связи (Пинг)</button>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        let userName = tg.initDataUnsafe?.user?.first_name || "Игрок";
-        document.getElementById('user-greeting').innerText = "Привет, " + userName + "!";
+        let myName = tg.initDataUnsafe?.user?.first_name || ("Игрок_" + Math.floor(Math.random()*100));
+        document.getElementById('user-greeting').innerText = "Игрок: " + myName;
 
         let peer = null;
         let conn = null;
 
+        function setStatus(text) {
+            document.getElementById('game-status').innerHTML = text;
+        }
+
+        function showGameScreen() {
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+        }
+
+        // Создание комнаты (Хост)
         function createRoom() {
             const randomCode = Math.floor(1000 + Math.random() * 9000);
-            const fullId = "friend-game-" + randomCode;
+            const fullId = "cardgame-" + randomCode;
 
+            setStatus("Создание комнаты...");
             peer = new Peer(fullId);
 
             peer.on('open', () => {
-                document.getElementById('game-status').innerHTML = 
-                    `Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br>Ждем подключения...`;
+                setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание подключения...</span>`);
+            });
+
+            peer.on('error', (err) => {
+                setStatus("Ошибка сети: " + err.type);
             });
 
             peer.on('connection', (connection) => {
                 conn = connection;
                 setupConnection();
-                document.getElementById('game-status').innerHTML = 
-                    `<span style="color: #4caf50;">Друг успешно подключился!</span>`;
+                setStatus("<span style='color: #4caf50;'>Друг подключился!</span>");
+                showGameScreen();
             });
         }
 
+        // Подключение к комнате (Гость)
         function joinRoom() {
             const codeInput = document.getElementById('room-code').value.trim();
-            if (codeInput.length !== 4) return alert("Введи 4-значный код комнаты!");
+            if (codeInput.length !== 4) {
+                alert("Введите ровно 4 цифры кода!");
+                return;
+            }
 
+            setStatus("Подключение к комнате " + codeInput + "...");
+
+            // Создаем случайный ID для гостя
             peer = new Peer();
+
             peer.on('open', () => {
-                document.getElementById('game-status').innerText = "Подключаемся...";
-                conn = peer.connect('friend-game-' + codeInput);
+                conn = peer.connect("cardgame-" + codeInput);
                 setupConnection();
+            });
+
+            peer.on('error', (err) => {
+                setStatus("Не удалось подключиться. Проверьте код.");
+                console.error(err);
             });
         }
 
+        // Настройка каналов связи
         function setupConnection() {
             conn.on('open', () => {
-                document.getElementById('game-status').innerHTML = 
-                    `<span style="color: #4caf50; font-weight: bold;">Соединение установлено! Вы в игре.</span>`;
+                setStatus("<span style='color: #4caf50; font-weight: bold;'>Соединение установлено!</span>");
+                showGameScreen();
             });
 
             conn.on('data', (data) => {
-                alert("Получено от друга: " + data);
+                if (data.type === 'ping') {
+                    document.getElementById('chat-box').innerText = "📩 Сигнал от друга получен!";
+                    setTimeout(() => { document.getElementById('chat-box').innerText = ""; }, 3000);
+                }
             });
+
+            conn.on('close', () => {
+                alert("Соединение с другом разорвано.");
+                location.reload();
+            });
+        }
+
+        function sendPing() {
+            if (conn && conn.open) {
+                conn.send({ type: 'ping' });
+                alert("Пинг отправлен другу!");
+            } else {
+                alert("Нет активного соединения.");
+            }
         }
     </script>
 </body>
