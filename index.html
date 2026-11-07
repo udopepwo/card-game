@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Карточный Клуб</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -87,9 +88,9 @@
 
     <div id="game-screen" style="display:none;">
         <div class="section">
-            <h3>Стол игры</h3>
-            <p>Вы зашли в комнату!</p>
-            <button onclick="leaveRoom()">Выйти в меню</button>
+            <h3>Игровой стол</h3>
+            <p id="players-list">Игроки в комнате:</p>
+            <button onclick="leaveRoom()">Выйти из комнаты</button>
         </div>
     </div>
 
@@ -99,45 +100,60 @@
         let myName = tg.initDataUnsafe?.user?.first_name || ("Игрок_" + Math.floor(Math.random()*100));
         document.getElementById('user-greeting').innerText = "Игрок: " + myName;
 
-        let currentRoom = null;
+        let peer = null;
+        let conn = null;
+        let isHost = false;
 
         function setStatus(text) {
             document.getElementById('game-status').innerHTML = text;
         }
 
-        function showGameScreen() {
+        function showGameScreen(otherPlayerName) {
             document.getElementById('menu-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('players-list').innerHTML = `<b>Участники матча:</b><br>👤 ${myName} (Вы)<br>👤 ${otherPlayerName || 'Соперник'}`;
         }
 
         function showMenuScreen() {
             document.getElementById('menu-screen').style.display = 'block';
             document.getElementById('game-screen').style.display = 'none';
             setStatus("Статус: Главное меню");
+            if(peer) peer.destroy();
         }
 
-        // Создание комнаты через публичный сервис синхронизации
-        async function createRoom() {
-            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-            setStatus("Создание комнаты...");
-
-            try {
-                // Регистрируем комнату на публичном тестовом бэкенде
-                let response = await fetch(`https://api.jsonbin.v3.b/v3/b`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': '$2a$10$Wq7v... (тестовый)' // Заменим на простой публичный эхо-сервер или localStorage-симуляцию для теста
-                    }
-                });
-            } catch (e) {
-                // Если нет ключа, используем ультра-простой публичный сервис постинтервалов или локальный тест
+        // Настройки соединения с публичным STUN (обход блокировок)
+        const peerOptions = {
+            host: '0.peerjs.com',
+            port: 443,
+            secure: true,
+            config: {
+                'iceServers': [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
             }
+        };
 
-            // Упрощенный рабочий метод через публичный worker / bin
-            currentRoom = randomCode;
-            setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
-            showGameScreen();
+        function createRoom() {
+            const randomCode = Math.floor(1000 + Math.random() * 9000);
+            const fullId = "cardgame-" + randomCode;
+            isHost = true;
+
+            setStatus("Создание комнаты...");
+            peer = new Peer(fullId, peerOptions);
+
+            peer.on('open', () => {
+                setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание подключения...</span>`);
+            });
+
+            peer.on('error', (err) => {
+                setStatus("Ошибка связи: " + err.type);
+            });
+
+            peer.on('connection', (connection) => {
+                conn = connection;
+                setupHostConnection();
+            });
         }
 
         function joinRoom() {
@@ -147,13 +163,60 @@
                 return;
             }
 
-            currentRoom = codeInput;
-            setStatus("Успешный вход в комнату " + codeInput + "!");
-            showGameScreen();
+            isHost = false;
+            setStatus("Подключение к комнате " + codeInput + "...");
+            peer = new Peer(peerOptions);
+
+            peer.on('open', () => {
+                conn = peer.connect("cardgame-" + codeInput);
+                setupGuestConnection();
+            });
+
+            peer.on('error', (err) => {
+                setStatus("Не удалось найти комнату.");
+            });
+        }
+
+        function setupHostConnection() {
+            conn.on('open', () => {
+                // Отправляем свое имя гостю
+                conn.send({ type: 'hello', name: myName });
+            });
+
+            conn.on('data', (data) => {
+                if (data.type === 'hello') {
+                    setStatus("<span style='color: #4caf50;'>Игрок подключился!</span>");
+                    showGameScreen(data.name);
+                }
+            });
+
+            conn.on('close', () => {
+                alert("Соединение разорвано.");
+                showMenuScreen();
+            });
+        }
+
+        function setupGuestConnection() {
+            conn.on('open', () => {
+                setStatus("<span style='color: #4caf50;'>Вход выполнен успешно!</span>");
+                // Отправляем свое имя хосту
+                conn.send({ type: 'hello', name: myName });
+            });
+
+            conn.on('data', (data) => {
+                if (data.type === 'hello') {
+                    showGameScreen(data.name);
+                }
+            });
+
+            conn.on('close', () => {
+                alert("Соединение разорвано.");
+                showMenuScreen();
+            });
         }
 
         function leaveRoom() {
-            currentRoom = null;
+            if(conn) conn.close();
             showMenuScreen();
         }
     </script>
