@@ -104,7 +104,7 @@
     </div>
 
     <div class="footer-version">
-        Версия: 1.4 (Beta)
+        Версия: 1.5 (Beta)
     </div>
 
     <script>
@@ -113,10 +113,10 @@
         let myName = tg.initDataUnsafe?.user?.first_name || ("Игрок_" + Math.floor(Math.random()*100));
         document.getElementById('user-greeting').innerText = "Игрок: " + myName;
 
-        let ws = null;
         let currentRoomCode = null;
         let hostName = null;
         let guestName = null;
+        let pollTimer = null;
         let isHost = false;
 
         function setStatus(text) {
@@ -141,9 +141,9 @@
             document.getElementById('menu-screen').style.display = 'block';
             document.getElementById('game-screen').style.display = 'none';
             setStatus("Статус: Главное меню");
-            if (ws) {
-                ws.close();
-                ws = null;
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
             }
             currentRoomCode = null;
             hostName = null;
@@ -151,51 +151,7 @@
             isHost = false;
         }
 
-        function connectWebSocket(roomCode, onOpenCallback) {
-            ws = new WebSocket(`wss://demo.piesocket.com/v3/room_${roomCode}?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self=0`);
-
-            ws.onopen = () => {
-                onOpenCallback();
-            };
-
-            ws.onerror = (err) => {
-                setStatus("Ошибка связи: network");
-                console.error(err);
-            };
-
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    handleMessage(data);
-                } catch(e) {}
-            };
-        }
-
-        function handleMessage(data) {
-            if (isHost) {
-                // Если я хост, а гость прислал сигнал входа
-                if (data.type === 'join') {
-                    guestName = data.name;
-                    updateUI();
-                    setStatus("<span style='color: #4caf50;'>Игрок подключился!</span>");
-                    // Отправляем гостю подтверждение со списком
-                    ws.send(JSON.stringify({
-                        type: 'sync',
-                        host: hostName,
-                        guest: guestName
-                    }));
-                }
-            } else {
-                // Если я гость, ловим ответ от хоста
-                if (data.type === 'sync') {
-                    hostName = data.host;
-                    guestName = data.guest;
-                    setStatus("<span style='color: #4caf50;'>Успешное подключение!</span>");
-                    showGameScreen();
-                }
-            }
-        }
-
+        // Создание комнаты (Хост)
         function createRoom() {
             const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
             currentRoomCode = randomCode;
@@ -203,16 +159,44 @@
             guestName = null;
             isHost = true;
 
-            setStatus("Подключение к серверу...");
+            setStatus("Создание комнаты...");
 
-            connectWebSocket(randomCode, () => {
-                setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b; ${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
-                // Исправление отображения кода
-                document.getElementById('game-status').innerHTML = `Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`;
+            const roomData = {
+                host: hostName,
+                guest: null,
+                status: 'waiting'
+            };
+
+            // Сохраняем комнату в облако Telegram
+            tg.CloudStorage.setItem('cardgame_room_' + randomCode, JSON.stringify(roomData), (err) => {
+                if (err) {
+                    setStatus("Ошибка создания комнаты");
+                    return;
+                }
+                
+                setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
                 showGameScreen();
+
+                // Хост опрашивает облако каждые 1.5 секунды, не зашел ли гость
+                pollTimer = setInterval(() => {
+                    tg.CloudStorage.getItem('cardgame_room_' + randomCode, (err, val) => {
+                        if (!err && val) {
+                            try {
+                                const data = JSON.parse(val);
+                                if (data.guest && data.guest !== 'null') {
+                                    guestName = data.guest;
+                                    updateUI();
+                                    setStatus("<span style='color: #4caf50;'>Игрок успешно подключился!</span>");
+                                    clearInterval(pollTimer);
+                                }
+                            } catch(e) {}
+                        }
+                    });
+                }, 1500);
             });
         }
 
+        // Вход в комнату (Гость)
         function joinRoom() {
             const codeInput = document.getElementById('room-code').value.trim();
             if (codeInput.length !== 4) {
@@ -220,23 +204,52 @@
                 return;
             }
 
+            // Запрещаем подключаться к самому себе
             currentRoomCode = codeInput;
             isHost = false;
-            guestName = myName;
+            setStatus("Поиск комнаты " + codeInput + "...");
 
-            setStatus("Подключение к комнате " + codeInput + "...");
+            // Ищем комнату, созданную хостом
+            tg.CloudStorage.getItem('cardgame_room_' + codeInput, (err, val) => {
+                if (err || !val) {
+                    setStatus("Комната не найдена. Проверьте код.");
+                    return;
+                }
 
-            connectWebSocket(codeInput, () => {
-                // Отправляем хосту сигнал, что мы зашли
-                ws.send(JSON.stringify({
-                    type: 'join',
-                    name: myName
-                }));
-                setStatus("<b>Ожидание ответа от хоста...</b>");
+                try {
+                    const roomData = JSON.parse(val);
+                    
+                    if (roomData.host === myName) {
+                        alert("Нельзя заходить в свою же комнату!");
+                        setStatus("Статус: Главное меню");
+                        return;
+                    }
+
+                    hostName = roomData.host;
+                    guestName = myName;
+                    roomData.guest = myName;
+                    roomData.status = 'playing';
+
+                    // Записываем себя как гостя в комнату хоста
+                    tg.CloudStorage.setItem('cardgame_room_' + codeInput, JSON.stringify(roomData), (err2) => {
+                        if (err2) {
+                            setStatus("Ошибка подключения к комнате");
+                            return;
+                        }
+                        setStatus("<span style='color: #4caf50;'>Успешное подключение!</span>");
+                        showGameScreen();
+                    });
+                } catch(e) {
+                    setStatus("Ошибка чтения данных комнаты.");
+                }
             });
         }
 
         function leaveRoom() {
+            // Если выходил хост, удаляем комнату из облака
+            if (isHost && currentRoomCode) {
+                tg.CloudStorage.removeItem('cardgame_room_' + currentRoomCode, () => {});
+            }
             showMenuScreen();
         }
     </script>
