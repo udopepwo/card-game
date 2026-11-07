@@ -104,7 +104,7 @@
     </div>
 
     <div class="footer-version">
-        Версия: 1.6 (Beta)
+        Версия: 1.7 (Beta)
     </div>
 
     <script>
@@ -118,7 +118,7 @@
         let hostName = null;
         let guestName = null;
         let isHost = false;
-        let heartbeatInterval = null;
+        let syncInterval = null;
 
         function setStatus(text) {
             document.getElementById('game-status').innerHTML = text;
@@ -146,9 +146,9 @@
                 ws.close();
                 ws = null;
             }
-            if (heartbeatInterval) {
-                clearInterval(heartbeatInterval);
-                heartbeatInterval = null;
+            if (syncInterval) {
+                clearInterval(syncInterval);
+                syncInterval = null;
             }
             currentRoomCode = null;
             hostName = null;
@@ -157,29 +157,21 @@
         }
 
         function connectWebSocket(roomCode, onOpenCallback) {
-            ws = new WebSocket(`wss://demo.piesocket.com/v3/room_${roomCode}?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self=0`);
+            // Используем уникальный канал для версии 1.7 с включенным эхо (notify_self=1)
+            ws = new WebSocket(`wss://demo.piesocket.com/v3/cardgame_v17_${roomCode}?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self=1`);
 
             ws.onopen = () => {
-                // Запускаем пинг для удержания соединения в мобильной сети
-                if (heartbeatInterval) clearInterval(heartbeatInterval);
-                heartbeatInterval = setInterval(() => {
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({ type: 'ping' }));
-                    }
-                }, 8000);
-
                 onOpenCallback();
             };
 
             ws.onerror = (err) => {
-                setStatus("Ошибка соединения");
+                setStatus("Ошибка связи");
                 console.error(err);
             };
 
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    if (data.type === 'ping') return; // Игнорируем пинг
                     handleMessage(data);
                 } catch(e) {}
             };
@@ -187,21 +179,19 @@
 
         function handleMessage(data) {
             if (isHost) {
-                if (data.type === 'join') {
+                // Если я хост, слушаем запросы на вход от гостя
+                if (data.type === 'JOIN' && data.name) {
                     guestName = data.name;
                     updateUI();
                     setStatus("<span style='color: #4caf50;'>Игрок подключился!</span>");
-                    // Отправляем синхронизацию гостю повторно для надежности
-                    ws.send(JSON.stringify({
-                        type: 'sync',
-                        host: hostName,
-                        guest: guestName
-                    }));
                 }
             } else {
-                if (data.type === 'sync') {
+                // Если я гость, слушаем состояние комнаты от хоста
+                if (data.type === 'ROOM_STATE' && data.host) {
                     hostName = data.host;
-                    guestName = data.guest;
+                    if (data.guest) {
+                        guestName = data.guest;
+                    }
                     setStatus("<span style='color: #4caf50;'>Успешное подключение!</span>");
                     showGameScreen();
                 }
@@ -215,11 +205,22 @@
             guestName = null;
             isHost = true;
 
-            setStatus("Подключение к серверу...");
+            setStatus("Создание комнаты...");
 
             connectWebSocket(randomCode, () => {
                 setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
                 showGameScreen();
+
+                // Хост каждые 2 секунды рассылает состояние комнаты в эфир
+                syncInterval = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'ROOM_STATE',
+                            host: hostName,
+                            guest: guestName
+                        }));
+                    }
+                }, 2000);
             });
         }
 
@@ -237,15 +238,15 @@
             setStatus("Подключение к комнате " + codeInput + "...");
 
             connectWebSocket(codeInput, () => {
-                // Отправляем сигнал хосту с небольшой задержкой для надежности соединения
-                setTimeout(() => {
+                // Гость непрерывно стучится хосту каждые 1.5 секунды, пока не получит ответ
+                syncInterval = setInterval(() => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         ws.send(JSON.stringify({
-                            type: 'join',
+                            type: 'JOIN',
                             name: myName
                         }));
                     }
-                }, 500);
+                }, 1500);
 
                 setStatus("<b>Ожидание ответа от хоста...</b>");
             });
