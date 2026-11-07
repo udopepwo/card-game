@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Карточный Клуб</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Подключаем MQTT для мгновенной связи игроков -->
+    <script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -102,101 +104,100 @@
         tg.expand();
         let myName = tg.initDataUnsafe?.user?.first_name || ("Игрок_" + Math.floor(Math.random()*100));
         document.getElementById('user-greeting').innerText = "Игрок: " + myName;
+        const myId = Math.random().toString(36).substring(2, 9);
 
-        let ws = null;
+        let mqttClient = null;
         let currentRoomCode = null;
+        let hostName = null;
+        let guestName = null;
 
         function setStatus(text) {
             document.getElementById('game-status').innerHTML = text;
         }
 
-        function showGameScreen(hostName, guestName) {
-            document.getElementById('menu-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
+        function updateUI() {
             document.getElementById('players-list').innerHTML = `
                 <b>👥 Участники в комнате:</b><br>
-                👑 Хост: <b>${hostName}</b><br>
+                👑 Хост: <b>${hostName || 'Ожидание...'}</b><br>
                 🎮 Гость: <b>${guestName || 'Ожидание подключения друга...'}</b>
             `;
+        }
+
+        function showGameScreen() {
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            updateUI();
         }
 
         function showMenuScreen() {
             document.getElementById('menu-screen').style.display = 'block';
             document.getElementById('game-screen').style.display = 'none';
             setStatus("Статус: Главное меню");
-            if (ws) {
-                ws.close();
-                ws = null;
+            if (mqttClient) {
+                mqttClient.end();
+                mqttClient = null;
             }
         }
 
-        function initWebSocket(onOpenCallback) {
-            // Используем публичный защищенный WebSocket на стандартном порту 443
-            ws = new WebSocket('wss://demo.piesocket.com/v3/room_cardgame?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self=1');
+        function initMqtt(onConnected) {
+            if (mqttClient && mqttClient.connected) {
+                onConnected();
+                return;
+            }
+            mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+                clientId: 'cardgame_' + Math.random().toString(16).substring(2, 8)
+            });
 
-            ws.onopen = () => {
-                onOpenCallback();
-            };
+            mqttClient.on('connect', () => {
+                onConnected();
+            });
 
-            ws.onerror = (err) => {
-                setStatus("Ошибка связи: проверьте интернет");
+            mqttClient.on('error', (err) => {
+                setStatus("Ошибка подключения к серверу");
                 console.error(err);
-            };
-
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    handleServerMessage(data);
-                } catch(e) {}
-            };
-        }
-
-        let roomData = { host: null, guest: null, code: null };
-
-        function handleServerMessage(data) {
-            if (!currentRoomCode) return;
-
-            if (data.room === currentRoomCode) {
-                if (data.type === 'create') {
-                    roomData.host = data.name;
-                    showGameScreen(roomData.host, roomData.guest);
-                } else if (data.type === 'join') {
-                    roomData.guest = data.name;
-                    showGameScreen(roomData.host, roomData.guest);
-                    // Отвечаем хосту, что гость в сборе
-                    ws.send(JSON.stringify({
-                        room: currentRoomCode,
-                        type: 'sync',
-                        host: roomData.host,
-                        guest: roomData.guest
-                    }));
-                } else if (data.type === 'sync') {
-                    roomData.host = data.host;
-                    roomData.guest = data.guest;
-                    showGameScreen(roomData.host, roomData.guest);
-                }
-            }
-        }
-
-        function createRoom() {
-            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-            currentRoomCode = randomCode;
-            roomData = { host: myName, guest: null, code: randomCode };
-
-            setStatus("Подключение к серверу...");
-
-            initWebSocket(() => {
-                setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
-                showGameScreen(myName, null);
-
-                ws.send(JSON.stringify({
-                    room: randomCode,
-                    type: 'create',
-                    name: myName
-                }));
             });
         }
 
+        // Создание комнаты (Хост)
+        function createRoom() {
+            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+            currentRoomCode = randomCode;
+            hostName = myName;
+            guestName = null;
+
+            setStatus("Подключение к серверу...");
+
+            initMqtt(() => {
+                const topic = `cardgame/room/${randomCode}`;
+                mqttClient.subscribe(topic, () => {
+                    setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
+                    showGameScreen();
+                });
+
+                mqttClient.on('message', (t, payload) => {
+                    if (t === topic) {
+                        try {
+                            const data = JSON.parse(payload.toString());
+                            if (data.senderId === myId) return;
+
+                            if (data.type === 'join') {
+                                guestName = data.name;
+                                updateUI();
+                                // Отправляем актуальный состав комнаты гостю
+                                mqttClient.publish(topic, JSON.stringify({
+                                    senderId: myId,
+                                    type: 'state',
+                                    host: hostName,
+                                    guest: guestName
+                                }));
+                            }
+                        } catch(e) {}
+                    }
+                });
+            });
+        }
+
+        // Вход в комнату (Гость)
         function joinRoom() {
             const codeInput = document.getElementById('room-code').value.trim();
             if (codeInput.length !== 4) {
@@ -205,15 +206,37 @@
             }
 
             currentRoomCode = codeInput;
+            guestName = myName;
+
             setStatus("Подключение к комнате " + codeInput + "...");
 
-            initWebSocket(() => {
-                ws.send(JSON.stringify({
-                    room: codeInput,
-                    type: 'join',
-                    name: myName
-                }));
-                setStatus("<span style='color: #4caf50;'>Запрос отправлен...</span>");
+            initMqtt(() => {
+                const topic = `cardgame/room/${codeInput}`;
+                mqttClient.subscribe(topic, () => {
+                    // Сигнализируем хосту, что мы вошли
+                    mqttClient.publish(topic, JSON.stringify({
+                        senderId: myId,
+                        type: 'join',
+                        name: myName
+                    }));
+                    setStatus("<b>Ожидание ответа от хоста...</b>");
+                });
+
+                mqttClient.on('message', (t, payload) => {
+                    if (t === topic) {
+                        try {
+                            const data = JSON.parse(payload.toString());
+                            if (data.senderId === myId) return;
+
+                            if (data.type === 'state') {
+                                hostName = data.host;
+                                guestName = data.guest;
+                                setStatus("<span style='color: #4caf50;'>Успешное подключение!</span>");
+                                showGameScreen();
+                            }
+                        } catch(e) {}
+                    }
+                });
             });
         }
 
