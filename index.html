@@ -112,13 +112,17 @@
             document.getElementById('game-screen').style.display = 'block';
         }
 
-        // Создание комнаты (Хост)
+        // Создание комнаты (Хост) с надежным публичным сервером PeerJS
         function createRoom() {
             const randomCode = Math.floor(1000 + Math.random() * 9000);
             const fullId = "cardgame-" + randomCode;
 
             setStatus("Создание комнаты...");
-            peer = new Peer(fullId);
+            peer = new Peer(fullId, {
+                host: '0.peerjs.com',
+                port: 443,
+                secure: true
+            });
 
             peer.on('open', () => {
                 setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание подключения...</span>`);
@@ -136,7 +140,7 @@
             });
         }
 
-        // Подключение к комнате (Гость)
+        // Подключение к комнате (Гость) с надежным сервером
         function joinRoom() {
             const codeInput = document.getElementById('room-code').value.trim();
             if (codeInput.length !== 4) {
@@ -146,8 +150,11 @@
 
             setStatus("Подключение к комнате " + codeInput + "...");
 
-            // Создаем случайный ID для гостя
-            peer = new Peer();
+            peer = new Peer({
+                host: '0.peerjs.com',
+                port: 443,
+                secure: true
+            });
 
             peer.on('open', () => {
                 conn = peer.connect("cardgame-" + codeInput);
