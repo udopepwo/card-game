@@ -9,21 +9,19 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #1a2733;
-            /* Текстура кожи/сукна под стиль Покер Онлайн */
             background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
             color: #ffffff;
             margin: 0;
             padding: 0;
             text-align: center;
-            padding-bottom: 70px; /* Место под нижнюю панель мастей */
         }
 
-        /* Верхняя панель игрока (как на скриншотах) */
+        /* Верхняя панель */
         .top-bar {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            padding: 10px 15px;
+            padding: 12px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -32,43 +30,50 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer;
         }
         .avatar-top {
-            width: 44px; height: 44px; border-radius: 50%;
+            width: 42px; height: 42px; border-radius: 50%;
             background: #2481cc; border: 2px solid #ffeb3b;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; overflow: hidden; flex-shrink: 0; cursor: pointer;
+            font-size: 20px; overflow: hidden; flex-shrink: 0;
         }
         .avatar-top img { width: 100%; height: 100%; object-fit: cover; }
         
         .top-currencies {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 14px;
         }
         .currency-item {
             display: flex;
             align-items: center;
-            gap: 5px;
-            background: rgba(0,0,0,0.4);
-            padding: 4px 10px;
+            gap: 6px;
+            background: rgba(0,0,0,0.5);
+            padding: 6px 12px;
             border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .add-curr-btn {
-            background: #e53935; color: white; border: none; width: 22px; height: 22px;
-            border-radius: 50%; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.15);
+            cursor: pointer;
         }
 
-        /* Меню в стиле Покер Онлайн */
+        /* Меню */
+        .menu-wrapper {
+            max-width: 420px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
         .menu-list {
             display: flex;
             flex-direction: column;
-            width: 100%;
-            max-width: 480px;
-            margin: 10px auto;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #233545;
+            border: 1px solid #34495e;
         }
         .menu-row {
             display: flex;
@@ -77,45 +82,15 @@
             padding: 16px 20px;
             background: #233545;
             border-bottom: 1px solid #17222d;
-            border-top: 1px solid rgba(255,255,255,0.05);
             cursor: pointer;
             font-size: 16px;
             font-weight: 500;
             color: #ecf0f1;
             text-align: left;
-            position: relative;
         }
         .menu-row:active { background: #1c2b38; }
         .menu-row-left { display: flex; align-items: center; gap: 14px; }
-        .menu-row-right { color: #95a5a6; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-        
-        .badge-new {
-            background: #e74c3c; color: white; font-size: 10px; font-weight: bold;
-            padding: 2px 8px; border-radius: 4px; text-transform: uppercase;
-        }
-
-        /* Нижняя навигационная панель с мастями */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: #151e27;
-            border-top: 2px solid #2c3e50;
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            z-index: 90;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            color: #7f8c8d;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        .nav-item.active { color: #e74c3c; }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+        .menu-row-right { color: #95a5a6; font-size: 14px; }
 
         /* Модальные окна */
         .modal-overlay {
@@ -138,15 +113,15 @@
         
         .friends-box {
             margin-top: 10px; text-align: left; font-size: 13px;
-            background: rgba(0,0,0,0.3); padding: 8px; border-radius: 10px; max-height: 130px; overflow-y: auto;
+            background: rgba(0,0,0,0.3); padding: 8px; border-radius: 10px; max-height: 150px; overflow-y: auto;
         }
         .friend-item {
             display: flex; justify-content: space-between; align-items: center; padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.05);
             cursor: pointer;
         }
-        .friend-item:hover { color: #4caf50; }
+        .friend-item:hover { color: #2ecc71; }
 
-        /* Игровой стол */
+        /* Игровой стол и Лобби */
         #lobby-screen, #game-screen {
             display: none;
             flex-direction: column;
@@ -158,7 +133,7 @@
             gap: 15px;
         }
         .card-table {
-            background: #1e7e34; /* Зеленое сукно */
+            background: #1e7e34;
             border: 4px solid #145a22;
             border-radius: 16px;
             padding: 20px;
@@ -224,27 +199,22 @@
 </head>
 <body>
 
-    <!-- Верхняя панель (профиль, монеты, фишки) -->
+    <!-- Верхняя панель -->
     <div class="top-bar">
-        <div class="top-user-info">
-            <div class="avatar-top" id="avatar-top-box" onclick="openMyProfile()">👤</div>
+        <div class="top-user-info" onclick="openMyProfile()">
+            <div class="avatar-top" id="avatar-top-box">👤</div>
             <div style="text-align: left; line-height: 1.2;">
                 <div id="top-username" style="font-weight: bold; font-size: 14px; color: #fff;">Игрок</div>
-                <div id="top-user-id" style="font-size: 11px; color: #f1c40f;">🏆 29</div>
+                <div style="font-size: 11px; color: #f1c40f;">🏆 29</div>
             </div>
         </div>
         <div class="top-currencies">
-            <div class="currency-item">
-                <span>🟡</span> <span id="gold-val">25</span>
-                <button class="add-curr-btn" onclick="alert('Магазин золота')">+</button>
+            <div class="currency-item" onclick="openBalanceModal()" title="Фишки">
+                <span>🟣</span> <span id="chips-val">0</span>
             </div>
-            <div class="currency-item">
-                <span>🟣</span> <span id="chips-val">5 665</span>
-                <button class="add-curr-btn" onclick="alert('Магазин фишек')">+</button>
-            </div>
-            <div id="bell-btn" style="position:relative; cursor:pointer; font-size:22px;" title="Уведомления">
+            <div id="bell-btn" style="position:relative; cursor:pointer; font-size:22px; padding: 0 5px;" title="Уведомления">
                 🔔
-                <div class="bell-badge" id="bell-badge" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; font-size:10px; width:16px; height:16px; border-radius:50%; display:none; align-items:center; justify-content:center;">0</div>
+                <div class="bell-badge" id="bell-badge" style="position:absolute; top:-3px; right:0; background:#e74c3c; color:white; font-size:10px; width:16px; height:16px; border-radius:50%; display:none; align-items:center; justify-content:center;">0</div>
             </div>
         </div>
     </div>
@@ -276,7 +246,42 @@
         </div>
     </div>
 
-    <!-- Модальное окно уведомлений -->
+    <!-- Модальное окно: Список друзей (отдельная кнопка) -->
+    <div id="friends-only-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="document.getElementById('friends-only-modal').style.display='none'">✕</button>
+            <h3 style="color:#f1c40f; margin-top:0;">👥 Мои друзья</h3>
+            <div class="friends-box" id="friends-only-container" style="max-height: 220px;">
+                <div style="color:#888; text-align:center;">Список пуст</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Статистика побед -->
+    <div id="stats-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="document.getElementById('stats-modal').style.display='none'">✕</button>
+            <h3 style="color:#f1c40f; margin-top:0;">🏆 Статистика побед</h3>
+            <div style="border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; text-align: left; font-size: 14px;">
+                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Дурак: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
+                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Покер: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
+                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Сундучок: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно баланса фишек -->
+    <div id="balance-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="document.getElementById('balance-modal').style.display='none'">✕</button>
+            <h3 style="color:#f1c40f; margin-top:0;">🟣 Фишки</h3>
+            <p style="font-size:14px; color:#ccc; margin: 10px 0;">Ваш текущий баланс:</p>
+            <div style="font-size: 28px; font-weight: bold; color: #2ecc71; margin-bottom: 15px;">0 фишек</div>
+            <p style="font-size:12px; color:#888;">Ежедневный бонус будет доступен позже.</p>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
     <div id="notifications-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" id="close-notifications">✕</button>
@@ -287,7 +292,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно приглашения друзей -->
+    <!-- Приглашение друзей в комнату -->
     <div id="invite-friends-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" id="close-invite-modal">✕</button>
@@ -298,65 +303,29 @@
         </div>
     </div>
 
-    <!-- Модальное окно выбора режима -->
-    <div id="mode-modal" class="modal-overlay">
-        <div class="modal-card">
-            <button class="modal-close" id="close-mode-modal">✕</button>
-            <h3 style="color:#f1c40f; margin-top:0;">Выбор режима</h3>
-            <div onclick="selectGameMode('tictactoe')" style="background:rgba(255,255,255,0.08); padding:12px; border-radius:10px; margin:8px 0; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-                <span>❌ Крестики-нолики</span>
-                <span style="color:#2ecc71; font-size:12px;">Активен</span>
-            </div>
-            <div style="background:rgba(255,255,255,0.08); padding:12px; border-radius:10px; margin:8px 0; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-                <span>🃏 Дурак</span>
-                <span style="font-size:11px; background:#555; padding:2px 6px; border-radius:6px; color:#ccc;">Скоро</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Главный экран меню (в стиле Покер Онлайн) -->
-    <div id="menu-screen">
+    <!-- Главное меню -->
+    <div id="menu-screen" class="menu-wrapper">
         <div class="menu-list">
-            <div class="menu-row" onclick="alert('Новости карточного клуба!')">
-                <div class="menu-row-left"><span>ℹ️</span> Новости</div>
-                <div class="menu-row-right"><span class="badge-new">NEW!</span> ❯</div>
-            </div>
-            <div class="menu-row" onclick="openFriendsScreenFromMenu()">
+            <div class="menu-row" onclick="openFriendsListModal()">
                 <div class="menu-row-left"><span>👥</span> Друзья</div>
                 <div class="menu-row-right">❯</div>
             </div>
-            <div class="menu-row" onclick="alert('Предметы и кастомизация')">
-                <div class="menu-row-left"><span>🎩</span> Предметы</div>
-                <div class="menu-row-right">3 ❯</div>
-            </div>
-            <div class="menu-row" onclick="alert('Доска почета')">
-                <div class="menu-row-left"><span>🏆</span> Доска почета</div>
+            <div class="menu-row" onclick="document.getElementById('stats-modal').style.display='flex'">
+                <div class="menu-row-left"><span>🏆</span> Победы</div>
                 <div class="menu-row-right">❯</div>
             </div>
-            <div class="menu-row" onclick="alert('Достижения игрока')">
-                <div class="menu-row-left"><span>⭐</span> Достижения</div>
-                <div class="menu-row-right">11 / 50 ❯</div>
-            </div>
-            <div class="menu-row" onclick="alert('Настройки игры')">
+            <div class="menu-row" onclick="alert('Настройки в разработке')">
                 <div class="menu-row-left"><span>⚙️</span> Настройки</div>
                 <div class="menu-row-right">❯</div>
             </div>
-            <div class="menu-row" onclick="alert('Поделиться ссылкой на игру')">
-                <div class="menu-row-left"><span>🔗</span> Поделиться</div>
-                <div class="menu-row-right">❯</div>
-            </div>
-            <div class="menu-row" onclick="alert('Правила карточных игр')">
-                <div class="menu-row-left"><span>❓</span> Правила</div>
-                <div class="menu-row-right">❯</div>
-            </div>
+        </div>
 
-            <!-- Блок быстрого создания комнаты прямо из меню -->
-            <div style="padding: 15px; background: rgba(0,0,0,0.2); margin-top: 10px; border-radius: 12px;">
-                <button id="btn-create" style="width: 100%; padding: 14px; font-size: 16px; background: #2ecc71; margin-bottom: 10px;">Создать комнату</button>
-                <div style="display:flex; gap:8px;">
-                    <input type="text" id="room-code-input" placeholder="Код комнаты" maxlength="4">
-                    <button id="btn-join" style="padding: 12px 20px;">Войти</button>
-                </div>
+        <!-- Создание и вход в комнату -->
+        <div style="padding: 15px; background: #233545; border-radius: 14px; border: 1px solid #34495e;">
+            <button id="btn-create" style="width: 100%; padding: 14px; font-size: 16px; background: #2ecc71; margin-bottom: 12px;">Создать комнату</button>
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="room-code-input" placeholder="Код комнаты" maxlength="4">
+                <button id="btn-join" style="padding: 12px 20px;">Войти</button>
             </div>
         </div>
     </div>
@@ -380,9 +349,6 @@
         </div>
 
         <div style="width:100%; max-width:340px; display:flex; flex-direction:column; gap:10px;">
-            <div id="host-controls-area" style="display:flex; gap:8px; justify-content:center;">
-                <button onclick="document.getElementById('mode-modal').style.display='flex'" style="background:#34495e; width:100%; padding:10px;">⚙️ Режим: <span id="current-mode-name">Крестики-нолики</span></button>
-            </div>
             <button id="start-btn" style="background: #e65100; width: 100%; padding: 14px;">Готов! (0/2)</button>
             <button id="btn-leave-lobby" style="background: #c0392b; width: 100%; padding: 12px;">Выйти в меню</button>
         </div>
@@ -404,26 +370,6 @@
                 <div class="cell" data-index="8"></div>
             </div>
             <button id="btn-leave-game" style="background: #c0392b; font-size: 12px; padding: 6px 12px; margin-top:10px;">Сдаться / В лобби</button>
-        </div>
-    </div>
-
-    <!-- Нижняя навигация в стиле Покер Онлайн (Масти) -->
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchNavTab('profile')">
-            <span class="nav-icon">♠️</span>
-            <span>Профиль</span>
-        </div>
-        <div class="nav-item" onclick="switchNavTab('open')">
-            <span class="nav-icon">♣️</span>
-            <span>Открытые</span>
-        </div>
-        <div class="nav-item" onclick="switchNavTab('private')">
-            <span class="nav-icon">♥️</span>
-            <span>Приватные</span>
-        </div>
-        <div class="nav-item" onclick="switchNavTab('create')">
-            <span class="nav-icon">♦️</span>
-            <span>Создать игру</span>
         </div>
     </div>
 
@@ -472,7 +418,6 @@
             const notificationsModal = document.getElementById('notifications-modal');
             const inviteModal = document.getElementById('invite-friends-modal');
 
-            // Публикация и обновление профиля с аватаркой в Firebase
             async function publishMyProfile() {
                 try {
                     await fetch(`${DATABASE_URL}/users/${safeMyKey}/profile.json`, {
@@ -484,7 +429,6 @@
             }
             publishMyProfile();
 
-            // Пинг активности (онлайн)
             function startHeartbeat() {
                 if (heartbeatTimer) clearInterval(heartbeatTimer);
                 const ping = async () => {
@@ -503,6 +447,20 @@
                 openProfileTarget(myName, myUsername, photoUrl, myFriends, Date.now(), true);
             };
 
+            window.openBalanceModal = function() {
+                document.getElementById('balance-modal').style.display = 'flex';
+            };
+
+            window.openFriendsListModal = function() {
+                const container = document.getElementById('friends-only-container');
+                if (myFriends.length === 0) {
+                    container.innerHTML = '<div style="color:#888; text-align:center;">Список пуст</div>';
+                } else {
+                    container.innerHTML = myFriends.map(f => `<div class="friend-item" onclick="openProfileByName('${f}')"><span>👤 ${f}</span></div>`).join('');
+                }
+                document.getElementById('friends-only-modal').style.display = 'flex';
+            };
+
             document.getElementById('close-profile').addEventListener('click', () => profileModal.style.display = 'none');
             document.getElementById('bell-btn').addEventListener('click', () => {
                 notificationsModal.style.display = 'flex';
@@ -510,26 +468,6 @@
             });
             document.getElementById('close-notifications').addEventListener('click', () => notificationsModal.style.display = 'none');
             document.getElementById('close-invite-modal').addEventListener('click', () => inviteModal.style.display = 'none');
-            document.getElementById('close-mode-modal').addEventListener('click', () => document.getElementById('mode-modal').style.display = 'none');
-
-            // Обработка нижней навигации (мастей)
-            window.switchNavTab = function(tab) {
-                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                event.currentTarget.classList.add('active');
-                if (tab === 'profile') {
-                    openMyProfile();
-                } else if (tab === 'open') {
-                    alert("Список открытых комнат (в разработке)");
-                } else if (tab === 'private') {
-                    document.getElementById('room-code-input').focus();
-                } else if (tab === 'create') {
-                    createRoom();
-                }
-            };
-
-            window.openFriendsScreenFromMenu = function() {
-                openMyProfile();
-            };
 
             function startNotificationListener() {
                 if (notifPollTimer) clearInterval(notifPollTimer);
@@ -641,7 +579,7 @@
                     });
                     alert("Запрос в друзья отправлен игроку " + targetName + "!");
                     document.getElementById('friend-action-container').style.display = 'none';
-                } catch(e) { alert("Ошибка отправки запроса."); }
+                } catch(e) {}
             }
 
             window.acceptFriendRequest = async function(reqId, friendName) {
@@ -870,9 +808,6 @@
             function updateLobbyUI(d) {
                 document.getElementById('room-header-text').innerHTML = `Комната создана. Код: <span style="color:#ffffff;">${currentRoomCode}</span>`;
                 
-                const controlsArea = document.getElementById('host-controls-area');
-                controlsArea.style.display = isHost ? 'flex' : 'none';
-
                 const slot0 = document.getElementById('slot-0');
                 if (hostName) {
                     slot0.classList.add('filled');
