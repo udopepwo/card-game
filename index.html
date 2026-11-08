@@ -24,6 +24,7 @@
             max-width: 400px;
             min-height: 120px;
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            position: relative;
         }
         button {
             background: #2481cc;
@@ -66,6 +67,100 @@
             padding: 10px;
             border-radius: 6px;
         }
+        
+        /* Кнопка вызова чата (слева снизу на столе) */
+        .chat-toggle-btn {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            width: 46px;
+            height: 46px;
+            background: #2481cc;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            z-index: 5;
+            transition: transform 0.1s;
+        }
+        .chat-toggle-btn:active { transform: scale(0.9); }
+
+        /* Окно чата */
+        #chat-modal {
+            display: none;
+            position: fixed;
+            bottom: 70px;
+            left: 15px;
+            right: 15px;
+            max-width: 380px;
+            margin: 0 auto;
+            background: #1e2a38;
+            border: 2px solid #2481cc;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            z-index: 10;
+            overflow: hidden;
+            text-align: left;
+        }
+        .chat-header {
+            background: #2481cc;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
+        #chat-messages {
+            height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(0,0,0,0.2);
+        }
+        .chat-msg {
+            background: rgba(255,255,255,0.08);
+            padding: 6px 10px;
+            border-radius: 8px;
+            word-break: break-word;
+        }
+        .chat-msg b { color: #4caf50; }
+        .chat-input-area {
+            display: flex;
+            padding: 8px;
+            background: #16222c;
+            gap: 6px;
+        }
+        .chat-input-area input {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 8px;
+            font-size: 13px;
+        }
+        .chat-input-area button {
+            margin: 0;
+            padding: 8px 14px;
+            font-size: 13px;
+        }
+
         .footer-version {
             margin-top: 30px;
             font-size: 12px;
@@ -81,6 +176,24 @@
 
     <div class="card-table">
         <div id="game-status">Статус: Главное меню</div>
+        
+        <!-- Кнопка чата на столе -->
+        <button class="chat-toggle-btn" onclick="toggleChat()" title="Чат">💬</button>
+    </div>
+
+    <!-- Модальное окно чата -->
+    <div id="chat-modal">
+        <div class="chat-header">
+            <span>Чат комнаты</span>
+            <button class="chat-close" onclick="toggleChat()">✕</button>
+        </div>
+        <div id="chat-messages">
+            <div style="color: #aaa; text-align: center; margin-top: 40px;">Нет сообщений...</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Написать сообщение..." maxlength="100" onkeypress="checkEnter(event)">
+            <button onclick="sendChatMessage()">Отправить</button>
+        </div>
     </div>
 
     <div id="menu-screen">
@@ -104,7 +217,7 @@
     </div>
 
     <div class="footer-version">
-        Версия: 2.0 (Beta)
+        Версия: 2.1 (Beta)
     </div>
 
     <script>
@@ -120,6 +233,7 @@
         let guestName = null;
         let isHost = false;
         let pollTimer = null;
+        let chatOpen = false;
 
         function setStatus(text) {
             document.getElementById('game-status').innerHTML = text;
@@ -136,140 +250,14 @@
         function showGameScreen() {
             document.getElementById('menu-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
+            document.querySelector('.chat-toggle-btn').style.display = 'flex';
             updateUI();
         }
 
         function showMenuScreen() {
             document.getElementById('menu-screen').style.display = 'block';
             document.getElementById('game-screen').style.display = 'none';
-            setStatus("Статус: Главное меню");
-            if (pollTimer) {
-                clearInterval(pollTimer);
-                pollTimer = null;
-            }
-            currentRoomCode = null;
-            hostName = null;
-            guestName = null;
-            isHost = false;
-        }
-
-        async function createRoom() {
-            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-            currentRoomCode = randomCode;
-            hostName = myName;
-            guestName = null;
-            isHost = true;
-
-            setStatus("Создание комнаты...");
-
-            const roomData = {
-                host: hostName,
-                guest: null,
-                status: 'waiting'
-            };
-
-            try {
-                const response = await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(roomData)
-                });
-
-                if (!response.ok) throw new Error();
-
-                setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
-                showGameScreen();
-
-                // Опрос статуса комнаты для хоста
-                pollTimer = setInterval(async () => {
-                    try {
-                        const res = await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`);
-                        const data = await res.json();
-                        if (data && data.guest) {
-                            guestName = data.guest;
-                            updateUI();
-                            setStatus("<span style='color: #4caf50;'>Игрок успешно подключился!</span>");
-                        }
-                    } catch(e) {}
-                }, 1000);
-
-            } catch(e) {
-                setStatus("Ошибка доступа к базе. Проверьте Rules в Firebase.");
-            }
-        }
-
-        async function joinRoom() {
-            const codeInput = document.getElementById('room-code').value.trim();
-            if (codeInput.length !== 4) {
-                alert("Введите ровно 4 цифры кода!");
-                return;
-            }
-
-            currentRoomCode = codeInput;
-            isHost = false;
-            setStatus("Поиск комнаты " + codeInput + "...");
-
-            try {
-                const res = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`);
-                const roomData = await res.json();
-
-                if (!roomData) {
-                    setStatus("Комната не найдена или была удалена.");
-                    return;
-                }
-
-                if (roomData.host === myName) {
-                    alert("Нельзя заходить в свою же комнату!");
-                    setStatus("Статус: Главное меню");
-                    return;
-                }
-
-                hostName = roomData.host;
-                guestName = myName;
-                roomData.guest = myName;
-                roomData.status = 'playing';
-
-                const updateRes = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(roomData)
-                });
-
-                if (!updateRes.ok) throw new Error();
-
-                setStatus("<span style='color: #4caf50;'>Успешное подключение!</span>");
-                showGameScreen();
-
-                // Слушаем комнату на случай выхода хоста
-                pollTimer = setInterval(async () => {
-                    try {
-                        const r = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`);
-                        const d = await r.json();
-                        if (!d) {
-                            alert("Хост закрыл комнату!");
-                            showMenuScreen();
-                        } else {
-                            hostName = d.host;
-                            guestName = d.guest;
-                            updateUI();
-                        }
-                    } catch(e) {}
-                }, 1500);
-
-            } catch(e) {
-                setStatus("Ошибка подключения к комнате.");
-            }
-        }
-
-        async function leaveRoom() {
-            // Если выходит создатель (хост), полностью удаляем комнату из Firebase
-            if (isHost && currentRoomCode) {
-                try {
-                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, { method: 'DELETE' });
-                } catch(e) {}
-            }
-            showMenuScreen();
-        }
-    </script>
-</body>
-</html>
+            document.querySelector('.chat-toggle-btn').style.display = 'none';
+            document.getElementById('chat-modal').style.display = 'none';
+            chatOpen = false;
+            setStatus("Статус: Глав
