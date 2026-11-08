@@ -36,10 +36,8 @@
             padding: 15px;
             box-sizing: border-box;
             z-index: 10;
-            overflow-y: auto;
         }
 
-        /* Безопасный отступ сверху для шапки, чтобы не перекрывать челку Telegram */
         .top-bar {
             background-color: var(--blue-leather);
             background-image: var(--blue-pattern);
@@ -47,7 +45,7 @@
             border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 18px;
             max-width: 400px;
-            margin: 55px auto 0 auto; /* Сдвинуто ниже крестика телеграма */
+            margin: 50px auto 0 auto;
             width: 100%;
             padding: 10px 16px;
             display: flex;
@@ -55,6 +53,7 @@
             align-items: center;
             box-sizing: border-box;
             box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            z-index: 15;
         }
         .top-user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .avatar-top {
@@ -70,12 +69,12 @@
             display: flex; align-items: center; gap: 6px;
             background: rgba(0,0,0,0.5); padding: 6px 12px;
             border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);
-            cursor: pointer;
         }
 
         .menu-wrapper {
             max-width: 400px; margin: auto; width: 100%;
             display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
+            z-index: 15;
         }
         .menu-row {
             display: flex; justify-content: space-between; align-items: center;
@@ -83,7 +82,7 @@
             background-image: var(--blue-pattern); background-size: 16px 16px;
             border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
             cursor: pointer; font-size: 16px; font-weight: 500; color: #ffffff; text-align: left;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto;
         }
         .menu-row:active { background-color: #1f2e3d; }
 
@@ -93,6 +92,7 @@
             border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
             padding: 15px; max-width: 400px; margin: 0 auto 15px auto; width: 100%;
             box-sizing: border-box; box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+            z-index: 15;
         }
 
         /* Модальные окна */
@@ -147,20 +147,29 @@
             box-sizing: border-box; background: rgba(0,0,0,0.5); color: #fff;
         }
 
+        /* --- ЛОББИ СТОЛА (Зеленое сукно) --- */
+        #lobby-screen {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--green-table);
+            background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 50; align-items: center; justify-content: center; padding: 15px;
+        }
+
         /* --- ИГРОВОЙ СТОЛ --- */
         #game-table-screen {
             display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--green-table);
             background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
-            z-index: 20; flex-direction: column; justify-content: space-between;
+            z-index: 50; flex-direction: column; justify-content: space-between;
             padding: 10px; box-sizing: border-box;
         }
 
         .table-top-bar {
             display: flex; justify-content: space-between; align-items: center;
             background: rgba(0,0,0,0.4); padding: 8px 14px; border-radius: 12px; font-size: 13px;
-            margin-top: 50px; /* Ниже телеграм-кнопок */
+            margin-top: 50px;
         }
 
         .table-opponents { position: relative; width: 100%; height: 75px; }
@@ -247,7 +256,7 @@
                 </div>
             </div>
             <div class="top-currencies">
-                <div class="currency-item" onclick="openBalanceModal()" title="Фишки">
+                <div class="currency-item" title="Фишки">
                     <span>🪙</span> <span id="chips-val">0</span>
                 </div>
             </div>
@@ -255,7 +264,7 @@
 
         <div class="menu-wrapper">
             <div class="menu-list" style="display:flex; flex-direction:column; gap:10px;">
-                <div class="menu-row" onclick="openFriendsListModal()">
+                <div class="menu-row" onclick="openFriendsModal()">
                     <div class="menu-row-left"><span>👥</span> Друзья</div>
                     <div class="menu-row-right">❯</div>
                 </div>
@@ -289,11 +298,31 @@
         </div>
     </div>
 
+    <div id="friends-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="document.getElementById('friends-modal').style.display='none'">✕</button>
+            <h3 style="color:#f1c40f; margin-top:0;">👥 Друзья</h3>
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; color: #ccc; font-size: 14px;">
+                Список друзей пуст. Приглашайте друзей по коду стола!
+            </div>
+        </div>
+    </div>
+
+    <div id="stats-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="document.getElementById('stats-modal').style.display='none'">✕</button>
+            <h3 style="color:#f1c40f; margin-top:0;">🏆 Победы</h3>
+            <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; color: #ccc; font-size: 14px;">
+                Дурак: 0 | Покер: 0
+            </div>
+        </div>
+    </div>
+
     <div id="settings-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 5.0.0 (Full Durak Engine)</div>
+            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 6.0.0 (Fixed & Working)</div>
         </div>
     </div>
 
@@ -335,17 +364,16 @@
         </div>
     </div>
 
-    <!-- Лобби ожидания стола -->
-    <div id="lobby-screen" class="modal-overlay" style="display:none;">
+    <!-- Лобби ожидания стола (Зеленое сукно) -->
+    <div id="lobby-screen">
         <div class="modal-card" style="background: var(--green-table); border: 5px solid #0d3811;">
             <button class="modal-close" onclick="leaveRoom()">✕</button>
             <div id="room-header-text" style="font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px;">Стол: Код 0000</div>
-            <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 15px;">Ставка: 100 | Колода: 36 | Игроков: 1/2</div>
+            <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 15px;">Ставка: 100 | Игроков: 1/2</div>
             
-            <div style="display: flex; justify-content: center; gap: 12px; margin: 15px 0; flex-wrap: wrap;" id="lobby-slots-container"></div>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin: 15px 0; flex-wrap: wrap;" id="lobby-slots-container"></div>
 
             <div style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:10px;">
-                <!-- Кнопка блокируется, пока не наберется нужное число игроков -->
                 <button class="btn-white btn-disabled" id="start-game-btn" onclick="startGameNow()" style="width: 100%; padding: 14px;" disabled>Ожидание игроков...</button>
                 <button class="btn-red" onclick="leaveRoom()" style="width: 100%; padding: 12px;">Выйти</button>
             </div>
@@ -426,6 +454,17 @@
             document.getElementById('durak-settings-modal').style.display = 'flex';
         };
 
+        window.openFriendsModal = function() {
+            document.getElementById('friends-modal').style.display = 'flex';
+        };
+
+        window.openMyProfile = function() {
+            document.getElementById('modal-profile-name').innerText = myName;
+            document.getElementById('modal-profile-username').innerText = myUsername;
+            if (photoUrl) document.getElementById('modal-avatar').innerHTML = `<img src="${photoUrl}">`;
+            document.getElementById('profile-modal').style.display = 'flex';
+        };
+
         function generateDeck(deckSize) {
             const suits = ['♠', '♣', '♦', '♥'];
             let ranks = deckSize === '24' ? ['9', '10', 'J', 'Q', 'K', 'A'] :
@@ -438,7 +477,6 @@
                     deck.push({ rank: r, suit: s, id: r + s + Math.random() });
                 }
             }
-            // Перемешивание Fisher-Yates
             for (let i = deck.length - 1; i > 0; i--) {
                 let j = Math.floor(Math.random() * (i + 1));
                 [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -527,7 +565,12 @@
                         </div>
                     `;
                 } else {
-                    container.innerHTML += `<div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa;">+</div>`;
+                    // Кнопка плюсик с возможностью пригласить друга
+                    container.innerHTML += `
+                        <div onclick="inviteFriend(${roomData.code})" style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 22px; cursor: pointer;" title="Пригласить друга">
+                            +
+                        </div>
+                    `;
                 }
             }
 
@@ -545,6 +588,15 @@
             document.getElementById('menu-screen').style.display = 'none';
             document.getElementById('lobby-screen').style.display = 'flex';
         }
+
+        window.inviteFriend = function(code) {
+            const shareUrl = `https://t.me/share/url?url=Заходи играть в Дурак Онлайн! Код стола: ${code}`;
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
+                window.Telegram.WebApp.openTelegramLink(shareUrl);
+            } else {
+                window.open(shareUrl, '_blank');
+            }
+        };
 
         function startRoomPolling(code) {
             if (gamePollTimer) clearInterval(gamePollTimer);
@@ -572,7 +624,7 @@
 
             let pKeys = Object.keys(room.players);
             for (let key of pKeys) {
-                room.players[key].cards = deck.splice(0, 6);
+                room.players[key].cards = deck.splice(0, 6); // Раздаем ровно по 6 карт
             }
 
             room.status = 'playing';
@@ -595,7 +647,6 @@
             document.getElementById('trump-info').innerText = `Козырь: ${room.game.trump.rank}${room.game.trump.suit}`;
             document.getElementById('deck-count-badge').innerText = `${room.game.deck.length} карт`;
 
-            // Оппоненты
             const oppContainer = document.getElementById('table-opponents-container');
             oppContainer.innerHTML = '';
             let pKeys = Object.keys(room.players);
@@ -615,7 +666,6 @@
                 `;
             });
 
-            // Карты на столе
             const battleArea = document.getElementById('battle-pairs-area');
             battleArea.innerHTML = '';
             (room.game.tablePairs || []).forEach(pair => {
@@ -627,7 +677,6 @@
                 `;
             });
 
-            // Рука игрока
             const handContainer = document.getElementById('player-hand-container');
             handContainer.innerHTML = '';
             let myData = room.players[myName];
