@@ -67,8 +67,6 @@
             padding: 8px;
             border-radius: 6px;
         }
-
-        /* Выбор режима игры */
         .mode-selector {
             display: flex;
             align-items: center;
@@ -82,15 +80,12 @@
             font-size: 12px;
             border-radius: 6px;
         }
-        .mode-btn.active {
-            background: #4caf50;
-        }
+        .mode-btn.active { background: #4caf50; }
 
-        /* Крестики-нолики поле */
         .tictactoe-grid {
             display: grid;
-            grid-template-columns: repeat(3, 80px);
-            grid-template-rows: repeat(3, 80px);
+            grid-template-columns: repeat(3, 75px);
+            grid-template-rows: repeat(3, 75px);
             gap: 6px;
             justify-content: center;
             margin: 15px auto;
@@ -98,7 +93,7 @@
         .cell {
             background: #16222c;
             border: 2px solid #2481cc;
-            font-size: 36px;
+            font-size: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -108,7 +103,6 @@
         }
         .cell:active { background: #223546; }
 
-        /* Нижний компактный чат */
         .chat-container {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
@@ -136,33 +130,17 @@
             word-break: break-word;
         }
         .chat-msg b { color: #4caf50; }
-        .chat-input-row {
-            display: flex;
-            gap: 6px;
-        }
-        .chat-input-row input {
-            width: 100%;
-            margin: 0;
-            padding: 6px;
-            font-size: 12px;
-        }
-        .chat-input-row button {
-            margin: 0;
-            padding: 6px 12px;
-            font-size: 12px;
-        }
+        .chat-input-row { display: flex; gap: 6px; }
+        .chat-input-row input { width: 100%; margin: 0; padding: 6px; font-size: 12px; }
+        .chat-input-row button { margin: 0; padding: 6px 12px; font-size: 12px; }
 
-        .footer-version {
-            margin-top: 15px;
-            font-size: 11px;
-            color: #778899;
-        }
+        .footer-version { margin-top: 15px; font-size: 11px; color: #778899; }
     </style>
 </head>
 <body>
 
     <h2>♣️ Карточный Клуб ♠️</h2>
-    <p id="user-greeting" style="font-size: 13px; color: #aaa;">Загрузка...</p>
+    <p id="user-greeting" style="font-size: 13px; color: #aaa;">Инициализация...</p>
 
     <!-- Главное меню -->
     <div id="menu-screen">
@@ -175,243 +153,5 @@
         </div>
     </div>
 
-    <!-- Комната / Лобби -->
+    <!-- Лобби -->
     <div id="lobby-screen" style="display:none;">
-        <div class="card-table">
-            <div id="game-status">Комната создана</div>
-            <div id="players-list">Участники: загрузка...</div>
-        </div>
-
-        <!-- Выбор режима и кнопка Старта -->
-        <div class="section">
-            <div style="font-size: 13px; margin-bottom: 5px; color: #aaa;">Режим игры:</div>
-            <div class="mode-selector">
-                <button onclick="changeMode('poker')" class="mode-btn" id="mode-poker">Покер (скоро)</button>
-                <button onclick="changeMode('tictactoe')" class="mode-btn active" id="mode-tictactoe">Крестики-нолики</button>
-            </div>
-            <button id="start-btn" onclick="toggleReady()" style="background: #e65100; width: 100%; max-width: 250px;">Готов! (0/2)</button>
-        </div>
-
-        <button onclick="leaveRoom()" style="background: #d32f2f; font-size: 13px; padding: 6px 14px;">Выйти в меню</button>
-    </div>
-
-    <!-- Игровой экран (Крестики-нолики) -->
-    <div id="game-screen" style="display:none;">
-        <div class="card-table">
-            <h3 id="turn-info" style="margin:0 0 10px 0; font-size: 16px; color: #ffeb3b;">Ход игрока</h3>
-            <div class="tictactoe-grid" id="ttt-board">
-                <div class="cell" onclick="MakeMove(0)"></div>
-                <div class="cell" onclick="MakeMove(1)"></div>
-                <div class="cell" onclick="MakeMove(2)"></div>
-                <div class="cell" onclick="MakeMove(3)"></div>
-                <div class="cell" onclick="MakeMove(4)"></div>
-                <div class="cell" onclick="MakeMove(5)"></div>
-                <div class="cell" onclick="MakeMove(6)"></div>
-                <div class="cell" onclick="MakeMove(7)"></div>
-                <div class="cell" onclick="MakeMove(8)"></div>
-            </div>
-            <button onclick="leaveRoom()" style="background: #d32f2f; font-size: 12px; padding: 6px 12px;">Сдаться / В лобби</button>
-        </div>
-    </div>
-
-    <!-- Встроенный чат снизу -->
-    <div class="chat-container" id="chat-box-wrapper" style="display:none;">
-        <div id="chat-messages">
-            <div style="color: #aaa; text-align: center; margin-top: 25px;">Чат комнаты пуст...</div>
-        </div>
-        <div class="chat-input-row">
-            <input type="text" id="chat-input" placeholder="Сообщение..." maxlength="100" onkeypress="checkEnter(event)">
-            <button onclick="sendChatMessage()">Отправить</button>
-        </div>
-    </div>
-
-    <div class="footer-version">Версия: 2.2 (Beta)</div>
-
-    <script>
-        let myName = "Игрок_" + Math.floor(Math.random() * 900 + 100);
-        try {
-            if (window.Telegram && window.Telegram.WebApp) {
-                const tg = window.Telegram.WebApp;
-                tg.expand();
-                if (tg.initDataUnsafe?.user?.first_name) myName = tg.initDataUnsafe.user.first_name;
-            }
-        } catch (e) {}
-        document.getElementById('user-greeting').innerText = "Игрок: " + myName;
-
-        const DATABASE_URL = "https://cardgame-adee9-default-rtdb.europe-west1.firebasedatabase.app";
-
-        let currentRoomCode = null;
-        let hostName = null;
-        let guestName = null;
-        let isHost = false;
-        let isReady = false;
-        let selectedMode = 'tictactoe';
-        let pollTimer = null;
-
-        function setStatus(text) {
-            document.getElementById('game-status').innerHTML = text;
-        }
-
-        function updateUI() {
-            document.getElementById('players-list').innerHTML = `
-                <b>👥 Участники:</b><br>
-                👑 Хост: <b>${hostName || 'Ожидание...'}</b><br>
-                🎮 Гость: <b>${guestName || 'Ожидание игрока...'}</b>
-            `;
-        }
-
-        function showScreen(screenId) {
-            document.getElementById('menu-screen').style.display = 'none';
-            document.getElementById('lobby-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('chat-box-wrapper').style.display = 'none';
-
-            document.getElementById(screenId).style.display = 'block';
-            if (screenId !== 'menu-screen') {
-                document.getElementById('chat-box-wrapper').style.display = 'block';
-            }
-        }
-
-        function changeMode(mode) {
-            if (mode === 'poker') {
-                alert("Режим покера находится в разработке! Пока доступны Крестики-нолики.");
-                return;
-            }
-            selectedMode = mode;
-            document.getElementById('mode-tictactoe').classList.add('active');
-            document.getElementById('mode-poker').classList.remove('active');
-        }
-
-        async function createRoom() {
-            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-            currentRoomCode = randomCode;
-            hostName = myName;
-            guestName = null;
-            isHost = true;
-            isReady = false;
-
-            setStatus("Комната создана. Код: <b style='color:#ffeb3b; font-size:20px;'>" + randomCode + "</b>");
-
-            const roomData = {
-                host: hostName,
-                guest: null,
-                status: 'lobby',
-                mode: 'tictactoe',
-                ready: { [hostName]: false },
-                messages: {},
-                game: { board: ['', '', '', '', '', '', '', '', ''], turn: 'X', winner: null }
-            };
-
-            try {
-                await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData) }); showScreen('lobby-screen'); updateUI(); startPolling(randomCode); } catch(e) { alert("Ошибка создания комнаты!"); } }  async function joinRoom() { const codeInput = document.getElementById('room-code').value.trim(); if (codeInput.length !== 4) { alert("Введите 4 цифры кода!"); return; }  currentRoomCode = codeInput; isHost = false; isReady = false;  try { const res = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`); const roomData = await res.json(); if (!roomData) { alert("Комната не найдена!"); return; } if (roomData.host === myName) { alert("Нельзя заходить к самому себе!"); return; }  hostName = roomData.host; guestName = myName; roomData.guest = myName; roomData.ready[myName] = false;  await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData) });  showScreen('lobby-screen'); updateUI(); startPolling(codeInput); } catch(e) { alert("Ошибка подключения."); } }  async function toggleReady() { isReady = !isReady; const btn = document.getElementById('start-btn'); btn.style.background = isReady ? '#2e7d32' : '#e65100';  try { await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/ready/${myName}.json`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(isReady)
-                });
-            } catch(e) {}
-        }
-
-        function startPolling(code) {
-            if (pollTimer) clearInterval(pollTimer);
-            pollTimer = setInterval(async () => {
-                try {
-                    const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
-                    const d = await res.json();
-                    if (!d) { alert("Комната удалена хостом!"); leaveRoom(); return; }
-
-                    hostName = d.host;
-                    guestName = d.guest;
-                    updateUI();
-
-                    // Проверка статуса готовности игроков в лобби
-                    if (d.status === 'lobby') {
-                        let readyCount = 0;
-                        let totalCount = d.guest ? 2 : 1;
-                        if (d.ready) {
-                            if (d.ready[d.host]) readyCount++;
-                            if (d.guest && d.ready[d.guest]) readyCount++;
-                        }
-                        document.getElementById('start-btn.innerText` = `Готов! (${readyCount}/${totalCount})`;
-                        document.getElementById('start-btn').innerText = `Готов! (${readyCount}/${totalCount})`;
-
-                        // Если оба нажми готов — запускаем игру!
-                        if (totalCount === 2 && readyCount === 2 && isHost) {
-                            await fetch(`${DATABASE_URL}/rooms/${code}/status.json`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify('playing')
-                            });
-                        }
-                    }
-
-                    if (d.status === 'playing') {
-                        showScreen('game-screen');
-                        renderTicTacToe(d.game);
-                    }
-
-                    renderChatMessages(d.messages);
-                } catch(e) {}
-            }, 1000);
-        }
-
-        // Логика Крестиков-ноликов
-        function renderTicTacToe(gameData) {
-            const board = gameData.board;
-            const cells = document.querySelectorAll('.cell');
-            cells.forEach((cell, idx) => {
-                cell.innerText = board[idx] || '';
-            });
-
-            // Определяем кто есть кто (Хост = X, Гость = O)
-            let mySymbol = isHost ? 'X' : 'O';
-            let turnInfo = document.getElementById('turn-info');
-
-            if (gameData.winner) {
-                if (gameData.winner === 'draw') turnInfo.innerText = "Ничья! 🤝";
-                else turnInfo.innerText = `Победил игрок: ${gameData.winner === 'X' ? hostName : guestName}! 🎉`;
-                return;
-            }
-
-            if (gameData.turn === mySymbol) {
-                turnInfo.innerHTML = `<span style="color:#4caf50;">Ваш ход (${mySymbol})!</span>`;
-            } else {
-                let currentTurnName = gameData.turn === 'X' ? hostName : guestName;
-                turnInfo.innerHTML = `Ходит: <b>${currentTurnName} (${gameData.turn})</b>`;
-            }
-        }
-
-        async function MakeMove(index) {
-            try {
-                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/game.json`);
-                const game = await res.json();
-                let mySymbol = isHost ? 'X' : 'O';
-
-                if (game.winner || game.turn !== mySymbol || game.board[index] !== '') return;
-
-                game.board[index] = mySymbol;
-                game.turn = mySymbol === 'X' ? 'O' : 'X';
-
-                // Проверка победителя
-                const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-                for (let w of wins) {
-                    let [a,b,c] = w;
-                    if (game.board[a] && game.board[a] === game.board[b] && game.board[a] === game.board[c]) {
-                        game.winner = mySymbol;
-                    }
-                }
-                if (!game.winner && !game.board.includes('')) {
-                    game.winner = 'draw';
-                }
-
-                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/game.json`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(game)
-                });
-            } catch(e) {}
-        }
-
-        function renderChatMessages(messagesObj) {
-            const box = document.getElementById('chat-messages');
-            if (!messagesObj) {
-                
