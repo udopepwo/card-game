@@ -104,7 +104,7 @@
     </div>
 
     <div class="footer-version">
-        Версия: 1.7 (Beta)
+        Версия: 2.0 (Beta)
     </div>
 
     <script>
@@ -113,12 +113,13 @@
         let myName = tg.initDataUnsafe?.user?.first_name || ("Игрок_" + Math.floor(Math.random()*100));
         document.getElementById('user-greeting').innerText = "Игрок: " + myName;
 
-        let ws = null;
+        const DATABASE_URL = "https://cardgame-adee9-default-rtdb.europe-west1.firebasedatabase.app";
+
         let currentRoomCode = null;
         let hostName = null;
         let guestName = null;
         let isHost = false;
-        let syncInterval = null;
+        let pollTimer = null;
 
         function setStatus(text) {
             document.getElementById('game-status').innerHTML = text;
@@ -142,13 +143,9 @@
             document.getElementById('menu-screen').style.display = 'block';
             document.getElementById('game-screen').style.display = 'none';
             setStatus("Статус: Главное меню");
-            if (ws) {
-                ws.close();
-                ws = null;
-            }
-            if (syncInterval) {
-                clearInterval(syncInterval);
-                syncInterval = null;
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
             }
             currentRoomCode = null;
             hostName = null;
@@ -156,49 +153,7 @@
             isHost = false;
         }
 
-        function connectWebSocket(roomCode, onOpenCallback) {
-            // Используем уникальный канал для версии 1.7 с включенным эхо (notify_self=1)
-            ws = new WebSocket(`wss://demo.piesocket.com/v3/cardgame_v17_${roomCode}?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self=1`);
-
-            ws.onopen = () => {
-                onOpenCallback();
-            };
-
-            ws.onerror = (err) => {
-                setStatus("Ошибка связи");
-                console.error(err);
-            };
-
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    handleMessage(data);
-                } catch(e) {}
-            };
-        }
-
-        function handleMessage(data) {
-            if (isHost) {
-                // Если я хост, слушаем запросы на вход от гостя
-                if (data.type === 'JOIN' && data.name) {
-                    guestName = data.name;
-                    updateUI();
-                    setStatus("<span style='color: #4caf50;'>Игрок подключился!</span>");
-                }
-            } else {
-                // Если я гость, слушаем состояние комнаты от хоста
-                if (data.type === 'ROOM_STATE' && data.host) {
-                    hostName = data.host;
-                    if (data.guest) {
-                        guestName = data.guest;
-                    }
-                    setStatus("<span style='color: #4caf50;'>Успешное подключение!</span>");
-                    showGameScreen();
-                }
-            }
-        }
-
-        function createRoom() {
+        async function createRoom() {
             const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
             currentRoomCode = randomCode;
             hostName = myName;
@@ -207,24 +162,43 @@
 
             setStatus("Создание комнаты...");
 
-            connectWebSocket(randomCode, () => {
+            const roomData = {
+                host: hostName,
+                guest: null,
+                status: 'waiting'
+            };
+
+            try {
+                const response = await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(roomData)
+                });
+
+                if (!response.ok) throw new Error();
+
                 setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
                 showGameScreen();
 
-                // Хост каждые 2 секунды рассылает состояние комнаты в эфир
-                syncInterval = setInterval(() => {
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'ROOM_STATE',
-                            host: hostName,
-                            guest: guestName
-                        }));
-                    }
-                }, 2000);
-            });
+                // Опрос статуса комнаты для хоста
+                pollTimer = setInterval(async () => {
+                    try {
+                        const res = await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`);
+                        const data = await res.json();
+                        if (data && data.guest) {
+                            guestName = data.guest;
+                            updateUI();
+                            setStatus("<span style='color: #4caf50;'>Игрок успешно подключился!</span>");
+                        }
+                    } catch(e) {}
+                }, 1000);
+
+            } catch(e) {
+                setStatus("Ошибка доступа к базе. Проверьте Rules в Firebase.");
+            }
         }
 
-        function joinRoom() {
+        async function joinRoom() {
             const codeInput = document.getElementById('room-code').value.trim();
             if (codeInput.length !== 4) {
                 alert("Введите ровно 4 цифры кода!");
@@ -233,26 +207,67 @@
 
             currentRoomCode = codeInput;
             isHost = false;
-            guestName = myName;
+            setStatus("Поиск комнаты " + codeInput + "...");
 
-            setStatus("Подключение к комнате " + codeInput + "...");
+            try {
+                const res = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`);
+                const roomData = await res.json();
 
-            connectWebSocket(codeInput, () => {
-                // Гость непрерывно стучится хосту каждые 1.5 секунды, пока не получит ответ
-                syncInterval = setInterval(() => {
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'JOIN',
-                            name: myName
-                        }));
-                    }
+                if (!roomData) {
+                    setStatus("Комната не найдена или была удалена.");
+                    return;
+                }
+
+                if (roomData.host === myName) {
+                    alert("Нельзя заходить в свою же комнату!");
+                    setStatus("Статус: Главное меню");
+                    return;
+                }
+
+                hostName = roomData.host;
+                guestName = myName;
+                roomData.guest = myName;
+                roomData.status = 'playing';
+
+                const updateRes = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(roomData)
+                });
+
+                if (!updateRes.ok) throw new Error();
+
+                setStatus("<span style='color: #4caf50;'>Успешное подключение!</span>");
+                showGameScreen();
+
+                // Слушаем комнату на случай выхода хоста
+                pollTimer = setInterval(async () => {
+                    try {
+                        const r = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`);
+                        const d = await r.json();
+                        if (!d) {
+                            alert("Хост закрыл комнату!");
+                            showMenuScreen();
+                        } else {
+                            hostName = d.host;
+                            guestName = d.guest;
+                            updateUI();
+                        }
+                    } catch(e) {}
                 }, 1500);
 
-                setStatus("<b>Ожидание ответа от хоста...</b>");
-            });
+            } catch(e) {
+                setStatus("Ошибка подключения к комнате.");
+            }
         }
 
-        function leaveRoom() {
+        async function leaveRoom() {
+            // Если выходит создатель (хост), полностью удаляем комнату из Firebase
+            if (isHost && currentRoomCode) {
+                try {
+                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, { method: 'DELETE' });
+                } catch(e) {}
+            }
             showMenuScreen();
         }
     </script>
