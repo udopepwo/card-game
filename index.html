@@ -93,7 +93,6 @@
             padding: 15px; border-radius: 12px; width: 100%; box-sizing: border-box;
         }
 
-        /* Идеальное центрирование лобби по вертикали */
         #lobby-screen {
             display: flex;
             flex-direction: column;
@@ -389,7 +388,7 @@
         </div>
     </div>
 
-    <div class="footer-version">Версия: 2.7.0 (Beta)</div>
+    <div class="footer-version">Версия: 2.7.1 (Beta)</div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -429,7 +428,7 @@
             let notifPollTimer = null;
             let myFriends = [];
             let myRequests = [];
-            let pendingInvitee = null; // Имя друга, которого пригласили, но он еще не зашел
+            let pendingInvitee = null;
 
             const profileModal = document.getElementById('profile-modal');
             const notificationsModal = document.getElementById('notifications-modal');
@@ -437,7 +436,7 @@
             const modeModal = document.getElementById('mode-modal');
             const settingsModal = document.getElementById('settings-modal');
 
-            // Привязка модалок
+            // Безопасная привязка модальных окон
             document.getElementById('profile-btn').addEventListener('click', () => openProfile(myName, myUsername, photoUrl, true));
             document.getElementById('close-profile').addEventListener('click', () => profileModal.style.display = 'none');
 
@@ -448,7 +447,6 @@
             document.getElementById('close-notifications').addEventListener('click', () => notificationsModal.style.display = 'none');
             document.getElementById('close-invite-modal').addEventListener('click', () => inviteModal.style.display = 'none');
 
-            // Исправление кнопок режимов и настроек игры
             document.getElementById('open-mode-modal').addEventListener('click', () => modeModal.style.display = 'flex');
             document.getElementById('close-mode-modal').addEventListener('click', () => modeModal.style.display = 'none');
             document.getElementById('open-settings-modal').addEventListener('click', () => settingsModal.style.display = 'flex');
@@ -477,7 +475,6 @@
                 settingsModal.style.display = 'none';
             };
 
-            // Синхронизация уведомлений и друзей по личным ключам в Firebase
             function startNotificationListener() {
                 if (notifPollTimer) clearInterval(notifPollTimer);
                 notifPollTimer = setInterval(async () => {
@@ -527,7 +524,6 @@
                 }
             };
 
-            // Функция открытия профиля (своя или чужая, с подгрузкой данных конкретного игрока)
             window.openProfileByName = async function(targetName) {
                 if (targetName === myName) {
                     openProfile(myName, myUsername, photoUrl, true);
@@ -549,10 +545,22 @@
             };
 
             function openProfile(name, username, avatar, isMe) {
-                openProfileTarget(name, username, avatar, myFriends, isMe);
+                // Подтягиваем актуальный список друзей конкретного открываемого пользователя
+                loadTargetFriendsAndOpen(name, username, avatar, isMe);
             }
 
-            function openProfileTarget(name, username, avatar, friendsList, isMe) {
+            async function loadTargetFriendsAndOpen(name, username, avatar, isMe) {
+                let targetFriends = myFriends;
+                if (!isMe) {
+                    try {
+                        const safeTarget = name.replace(/[.#$\/\[\]]/g, "_");
+                        const res = await fetch(`${DATABASE_URL}/users/${safeTarget}/friends.json`);
+                        const fData = await res.json();
+                        if (fData) targetFriends = Array.from(new Set(Object.values(fData)));
+                        else targetFriends = [];
+                    } catch(e) { targetFriends = []; }
+                }
+
                 document.getElementById('modal-profile-name').innerText = name;
                 document.getElementById('modal-profile-username').innerText = username;
                 document.getElementById('modal-avatar').innerHTML = avatar ? `<img src="${avatar}">` : '👤';
@@ -565,12 +573,55 @@
                     actionContainer.style.display = 'none';
                 }
 
-                document.getElementById('friends-count').innerText = friendsList.length;
+                document.getElementById('friends-count').innerText = targetFriends.length;
                 const fContainer = document.getElementById('friends-list-container');
-                if (friendsList.length === 0) {
+                if (targetFriends.length === 0) {
                     fContainer.innerHTML = '<div style="color:#888; text-align:center;">Список пуст</div>';
                 } else {
-                    fContainer.innerHTML = friendsList.map(f => `<div class="friend-item" onclick="openProfileByName('${f}')"><span>👤 ${f}</span></div>`).join(''); }  profileModal.style.display = 'flex'; }  // Публикация профиля в базу при старте для корректного просмотра другими async function publishMyProfile() { try { await fetch(`${DATABASE_URL}/users/${safeMyKey}/profile.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: myUsername, photo: photoUrl }) }); } catch(e) {} } publishMyProfile();  async function sendFriendRequest(targetName) { const safeTargetKey = targetName.replace(/[.#$\/\[\]]/g, "_"); try { await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'friend', from: myName }) }); alert("Запрос в друзья успешно отправлен игроку " + targetName + "!"); document.getElementById('friend-action-container').style.display = 'none'; } catch(e) { alert("Ошибка отправки запроса."); } }  window.acceptFriendRequest = async function(reqId, friendName) { try { const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_");  await fetch(`${DATABASE_URL}/users/${safeMyKey}/friends.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(friendName) }); await fetch(`${DATABASE_URL}/users/${safeTargetKey}/friends.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(myName) });  // Удаляем запрос сразу, чтобы не было дублей и бесконечных повторов await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
+                    fContainer.innerHTML = targetFriends.map(f => `<div class="friend-item" onclick="openProfileByName('${f}')"><span>👤 ${f}</span></div>`).join('');
+                }
+
+                profileModal.style.display = 'flex';
+            }
+
+            async function publishMyProfile() {
+                try {
+                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/profile.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: myUsername, photo: photoUrl })
+                    });
+                } catch(e) {}
+            }
+            publishMyProfile();
+
+            async function sendFriendRequest(targetName) {
+                const safeTargetKey = targetName.replace(/[.#$\/\[\]]/g, "_");
+                try {
+                    await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'friend', from: myName })
+                    });
+                    alert("Запрос в друзья успешно отправлен игроку " + targetName + "!");
+                    document.getElementById('friend-action-container').style.display = 'none';
+                } catch(e) {
+                    alert("Ошибка отправки запроса.");
+                }
+            }
+
+            window.acceptFriendRequest = async function(reqId, friendName) {
+                try {
+                    const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_");
+                    
+                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/friends.json`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(friendName)
+                    });
+                    await fetch(`${DATABASE_URL}/users/${safeTargetKey}/friends.json`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(myName)
+                    });
+
+                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
 
                     if (!myFriends.includes(friendName)) myFriends.push(friendName);
                     myRequests = myRequests.filter(r => r.id !== reqId);
@@ -584,7 +635,35 @@
 
             window.rejectFriendRequest = async function(reqId) {
                 try {
-                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' }); myRequests = myRequests.filter(r => r.id !== reqId); updateBellBadge(); renderNotifications(); } catch(e) {} };  window.inviteFriendToRoom = async function(friendName) { const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_"); try { pendingInvitee = friendName; await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'room', from: myName, roomCode: currentRoomCode }) });  // Показываем серую аватарку-ожидание в слоте лобби updateLobbyUI({ host: hostName, guest: null, hostPhoto: hostPhoto, guestPhoto: null, ready: { [hostName]: false } });  alert("Приглашение отправлено игроку " + friendName + "!"); inviteModal.style.display = 'none'; } catch(e) { alert("Ошибка отправки приглашения."); } };  window.joinInvitedRoom = async function(reqId, roomCode) { notificationsModal.style.display = 'none'; // Сразу удаляем инвайт из уведомлений, чтобы он был одноразовым try { await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
+                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
+                    myRequests = myRequests.filter(r => r.id !== reqId);
+                    updateBellBadge();
+                    renderNotifications();
+                } catch(e) {}
+            };
+
+            window.inviteFriendToRoom = async function(friendName) {
+                const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_");
+                try {
+                    pendingInvitee = friendName;
+                    await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'room', from: myName, roomCode: currentRoomCode })
+                    });
+                    
+                    updateLobbyUI({ host: hostName, guest: null, hostPhoto: hostPhoto, guestPhoto: null, ready: { [hostName]: false } });
+                    alert("Приглашение отправлено игроку " + friendName + "!");
+                    inviteModal.style.display = 'none';
+                } catch(e) {
+                    alert("Ошибка отправки приглашения.");
+                }
+            };
+
+            window.joinInvitedRoom = async function(reqId, roomCode) {
+                notificationsModal.style.display = 'none';
+                try {
+                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
                 } catch(e) {}
                 
                 document.getElementById('room-code-input').value = roomCode;
@@ -604,3 +683,226 @@
                                 <div>🎮 <b>${r.from}</b> зовет вас в комнату (${r.roomCode})!</div>
                                 <div style="display:flex; gap:6px;">
                                     <button onclick="joinInvitedRoom('${r.id}', '${r.roomCode}')" style="padding:6px 10px; font-size:11px; background:#4caf50;">Войти</button>
+                                    <button onclick="rejectFriendRequest('${r.id}')" style="padding:6px 10px; font-size:11px; background:#d32f2f;">✕</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>👤 <b>${r.from}</b> хочет добавить в друзья</div>
+                                <div style="display:flex; gap:6px;">
+                                    <button onclick="acceptFriendRequest('${r.id}', '${r.from}')" style="padding:6px 10px; font-size:11px; background:#4caf50;">Принять</button>
+                                    <button onclick="rejectFriendRequest('${r.id}')" style="padding:6px 10px; font-size:11px; background:#d32f2f;">✕</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }).join('');
+            }
+
+            function renderInviteFriendsList() {
+                const container = document.getElementById('invite-friends-container');
+                if (myFriends.length === 0) {
+                    container.innerHTML = '<div style="color:#aaa; text-align:center; margin-top:20px;">У вас пока нет друзей</div>';
+                    return;
+                }
+                container.innerHTML = myFriends.map(f => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:8px;">
+                        <span>👤 ${f}</span>
+                        <button onclick="inviteFriendToRoom('${f}')" style="padding:4px 10px; font-size:11px; background:#2481cc;">Позвать</button>
+                    </div>
+                `).join('');
+            }
+
+            // Управление меню и комнатами
+            document.getElementById('btn-create').addEventListener('click', createRoom);
+            document.getElementById('btn-join').addEventListener('click', joinRoom);
+            document.getElementById('start-btn').addEventListener('click', toggleReady);
+            document.getElementById('btn-leave-lobby').addEventListener('click', leaveRoom);
+            document.getElementById('btn-leave-game').addEventListener('click', leaveRoom);
+
+            function showScreen(screenId) {
+                document.getElementById('menu-screen').style.display = 'none';
+                document.getElementById('lobby-screen').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'none';
+
+                if (screenId === 'menu-screen') {
+                    document.getElementById('menu-screen').style.display = 'flex';
+                } else {
+                    document.getElementById(screenId).style.display = 'flex';
+                }
+            }
+
+            async function createRoom() {
+                const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+                currentRoomCode = randomCode;
+                hostName = myName;
+                guestName = null;
+                hostPhoto = photoUrl;
+                guestPhoto = null;
+                isHost = true;
+                isReady = false;
+                pendingInvitee = null;
+
+                const roomData = {
+                    host: hostName, guest: null, hostPhoto: hostPhoto, guestPhoto: null,
+                    status: 'lobby', ready: { [hostName]: false }, messages: {},
+                    game: { board: ['', '', '', '', '', '', '', '', ''], turn: 'X', winner: null }
+                };
+
+                try {
+                    await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData)
+                    });
+                    showScreen('lobby-screen');
+                    updateLobbyUI(roomData);
+                    startPolling(randomCode);
+                } catch(e) { alert("Ошибка создания комнаты!"); }
+            }
+
+            async function joinRoom() {
+                const codeInput = document.getElementById('room-code-input').value.trim();
+                if (codeInput.length !== 4) { alert("Введите 4 цифры кода!"); return; }
+
+                currentRoomCode = codeInput;
+                isHost = false; isReady = false;
+
+                try {
+                    const res = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`);
+                    const roomData = await res.json();
+                    if (!roomData) { alert("Комната не найдена!"); return; }
+
+                    hostName = roomData.host; guestName = myName;
+                    hostPhoto = roomData.hostPhoto; guestPhoto = photoUrl;
+                    roomData.guest = myName; roomData.guestPhoto = guestPhoto;
+                    roomData.ready[myName] = false;
+
+                    await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData)
+                    });
+
+                    showScreen('lobby-screen');
+                    updateLobbyUI(roomData);
+                    startPolling(codeInput);
+                } catch(e) { alert("Ошибка подключения."); }
+            }
+
+            async function toggleReady() {
+                isReady = !isReady;
+                document.getElementById('start-btn').style.background = isReady ? '#2e7d32' : '#e65100';
+                try {
+                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/ready/${myName}.json`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(isReady)
+                    });
+                } catch(e) {}
+            }
+
+            function startPolling(code) {
+                if (pollTimer) clearInterval(pollTimer);
+                pollTimer = setInterval(async () => {
+                    try {
+                        const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
+                        const d = await res.json();
+                        if (!d) { alert("Комната удалена!"); leaveRoom(); return; }
+
+                        hostName = d.host; guestName = d.guest;
+                        hostPhoto = d.hostPhoto; guestPhoto = d.guestPhoto;
+                        updateLobbyUI(d);
+
+                        if (d.status === 'lobby') {
+                            let readyCount = 0, totalCount = d.guest ? 2 : 1;
+                            if (d.ready) {
+                                if (d.ready[d.host]) readyCount++;
+                                if (d.guest && d.ready[d.guest]) readyCount++;
+                            }
+                            document.getElementById('start-btn').innerText = `Готов! (${readyCount}/${totalCount})`;
+                            if (totalCount === 2 && readyCount === 2 && isHost) {
+                                await fetch(`${DATABASE_URL}/rooms/${code}/status.json`, {
+                                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify('playing')
+                                });
+                            }
+                        }
+                        if (d.status === 'playing') {
+                            showScreen('game-screen');
+                            renderTicTacToe(d.game);
+                        }
+                    } catch(e) {}
+                }, 1000);
+            }
+
+            function updateLobbyUI(d) {
+                document.getElementById('room-header-text').innerHTML = `Комната создана. Код: <span style="color:#ffffff;">${currentRoomCode}</span>`;
+                const slot0 = document.getElementById('slot-0');
+                if (hostName) {
+                    slot0.classList.add('filled');
+                    slot0.innerHTML = `${hostPhoto ? `<img src="${hostPhoto}">` : '<span>👤</span>'}<div class="host-crown">👑</div><div class="ready-badge ${d.ready && d.ready[hostName] ? 'ready' : 'not-ready'}">${d.ready && d.ready[hostName] ? '✓' : '✕'}</div>`;
+                }
+                const slot1 = document.getElementById('slot-1');
+                if (guestName) {
+                    slot1.classList.remove('pending');
+                    slot1.classList.add('filled');
+                    slot1.innerHTML = `${guestPhoto ? `<img src="${guestPhoto}">` : '<span>👤</span>'}<div class="ready-badge ${d.ready && d.ready[guestName] ? 'ready' : 'not-ready'}">${d.ready && d.ready[guestName] ? '✓' : '✕'}</div>`;
+                } else if (pendingInvitee) {
+                    slot1.classList.add('pending');
+                    slot1.innerHTML = `<span>⏳</span><div class="ready-badge pending">...</div>`;
+                } else {
+                    slot1.classList.remove('filled', 'pending');
+                    slot1.innerHTML = `<span>+</span><div class="ready-badge not-ready">✕</div>`;
+                }
+            }
+
+            function renderTicTacToe(gameData) {
+                const board = gameData.board;
+                document.querySelectorAll('.cell').forEach((cell, idx) => { cell.innerText = board[idx] || ''; });
+                let mySymbol = isHost ? 'X' : 'O';
+                let turnInfo = document.getElementById('turn-info');
+
+                if (gameData.winner) {
+                    turnInfo.innerText = gameData.winner === 'draw' ? "Ничья! Возврат в лобби..." : `Победил! Возврат в лобби...`;
+                    if (isHost && !gameData.resetting) {
+                        gameData.resetting = true;
+                        setTimeout(async () => {
+                            await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ status: 'lobby', ready: { [hostName]: false, ...(guestName ? { [guestName]: false } : {}) }, game: { board: ['', '', '', '', '', '', '', '', ''], turn: 'X', winner: null } })
+                            });
+                        }, 3000);
+                    }
+                    return;
+                }
+                turnInfo.innerHTML = gameData.turn === mySymbol ? `<span style="color:#4caf50;">Ваш ход (${mySymbol})!</span>` : `Ходит соперник`;
+            }
+
+            window.MakeMove = async function(index) {
+                try {
+                    const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/game.json`);
+                    const game = await res.json();
+                    let mySymbol = isHost ? 'X' : 'O';
+                    if (game.winner || game.turn !== mySymbol || game.board[index] !== '') return;
+                    game.board[index] = mySymbol;
+                    game.turn = mySymbol === 'X' ? 'O' : 'X';
+                    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+                    for (let w of wins) {
+                        let [a,b,c] = w;
+                        if (game.board[a] && game.board[a] === game.board[b] && game.board[a] === game.board[c]) game.winner = mySymbol;
+                    }
+                    if (!game.winner && !game.board.includes('')) game.winner = 'draw';
+                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/game.json`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(game)
+                    });
+                } catch(e) {}
+            };
+            document.querySelectorAll('.cell').forEach((cell, idx) => { cell.onclick = () => MakeMove(idx); });
+
+            async function leaveRoom() {
+                if (isHost && currentRoomCode) {
+                    try { await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, { method: 'DELETE' }); } catch(e) {}
+                }
+                if (pollTimer) clearInterval(pollTimer);
+                showScreen('menu-screen');
+            }
+        });
+    </script>
+</body>
+</html>
