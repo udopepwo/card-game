@@ -68,8 +68,9 @@
             border-radius: 6px;
         }
         
-        /* Кнопка вызова чата (слева снизу на столе) */
+        /* Кнопка чата скрыта по умолчанию в меню */
         .chat-toggle-btn {
+            display: none;
             position: absolute;
             bottom: 12px;
             left: 12px;
@@ -80,7 +81,6 @@
             border-radius: 50%;
             color: white;
             font-size: 20px;
-            display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
@@ -176,12 +176,10 @@
 
     <div class="card-table">
         <div id="game-status">Статус: Главное меню</div>
-        
-        <!-- Кнопка чата на столе -->
-        <button class="chat-toggle-btn" onclick="toggleChat()" title="Чат">💬</button>
+        <button id="chat-btn" class="chat-toggle-btn" onclick="toggleChat()" title="Чат">💬</button>
     </div>
 
-    <!-- Модальное окно чата -->
+    <!-- Окно чата -->
     <div id="chat-modal">
         <div class="chat-header">
             <span>Чат комнаты</span>
@@ -217,13 +215,23 @@
     </div>
 
     <div class="footer-version">
-        Версия: 2.1 (Beta)
+        Версия: 2.1.2 (Beta)
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        let myName = tg.initDataUnsafe?.user?.first_name || ("Игрок_" + Math.floor(Math.random()*100));
+        // Безопасная инициализация без риска падения скрипта
+        let myName = "Игрок_" + Math.floor(Math.random() * 900 + 100);
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.expand();
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) {
+                    myName = tg.initDataUnsafe.user.first_name;
+                }
+            }
+        } catch (e) {
+            console.log("Telegram init error:", e);
+        }
         document.getElementById('user-greeting').innerText = "Игрок: " + myName;
 
         const DATABASE_URL = "https://cardgame-adee9-default-rtdb.europe-west1.firebasedatabase.app";
@@ -250,14 +258,211 @@
         function showGameScreen() {
             document.getElementById('menu-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
-            document.querySelector('.chat-toggle-btn').style.display = 'flex';
+            document.getElementById('chat-btn').style.display = 'flex';
             updateUI();
         }
 
         function showMenuScreen() {
             document.getElementById('menu-screen').style.display = 'block';
             document.getElementById('game-screen').style.display = 'none';
-            document.querySelector('.chat-toggle-btn').style.display = 'none';
+            document.getElementById('chat-btn').style.display = 'none';
             document.getElementById('chat-modal').style.display = 'none';
             chatOpen = false;
-            setStatus("Статус: Глав
+            setStatus("Статус: Главное меню");
+            
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+            currentRoomCode = null;
+            hostName = null;
+            guestName = null;
+            isHost = false;
+        }
+
+        function toggleChat() {
+            chatOpen = !chatOpen;
+            const modal = document.getElementById('chat-modal');
+            modal.style.display = chatOpen ? 'block' : 'none';
+            if (chatOpen) {
+                const box = document.getElementById('chat-messages');
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        async function createRoom() {
+            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+            currentRoomCode = randomCode;
+            hostName = myName;
+            guestName = null;
+            isHost = true;
+
+            setStatus("Создание комнаты...");
+
+            const roomData = {
+                host: hostName,
+                guest: null,
+                status: 'waiting',
+                messages: {}
+            };
+
+            try {
+                const response = await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(roomData)
+                });
+
+                if (!response.ok) throw new Error();
+
+                setStatus(`Комната создана!<br>Код для друга: <b style="font-size: 24px; color: #ffeb3b;">${randomCode}</b><br><span style="font-size:12px; color:#ccc;">Ожидание игрока...</span>`);
+                showGameScreen();
+
+                startPolling(randomCode);
+
+            } catch(e) {
+                setStatus("Ошибка доступа к базе. Проверьте Rules.");
+            }
+        }
+
+        async function joinRoom() {
+            const codeInput = document.getElementById('room-code').value.trim();
+            if (codeInput.length !== 4) {
+                alert("Введите ровно 4 цифры кода!");
+                return;
+            }
+
+            currentRoomCode = codeInput;
+            isHost = false;
+            setStatus("Поиск комнаты " + codeInput + "...");
+
+            try {
+                const res = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`);
+                const roomData = await res.json();
+
+                if (!roomData) {
+                    setStatus("Комната не найдена или была удалена.");
+                    return;
+                }
+
+                if (roomData.host === myName) {
+                    alert("Нельзя заходить в свою же комнату!");
+                    setStatus("Статус: Главное меню");
+                    return;
+                }
+
+                hostName = roomData.host;
+                guestName = myName;
+                roomData.guest = myName;
+                roomData.status = 'playing';
+
+                const updateRes = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(roomData)
+                });
+
+                if (!updateRes.ok) throw new Error();
+
+                setStatus("<span style='color: #4caf50;'>Успешное подключение!</span>");
+                showGameScreen();
+
+                startPolling(codeInput);
+
+            } catch(e) {
+                setStatus("Ошибка подключения к комнате.");
+            }
+        }
+
+        function startPolling(code) {
+            if (pollTimer) clearInterval(pollTimer);
+
+            pollTimer = setInterval(async () => {
+                try {
+                    const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
+                    const d = await res.json();
+
+                    if (!d) {
+                        alert("Хост закрыл комнату!");
+                        showMenuScreen();
+                        return;
+                    }
+
+                    if (isHost && d.guest && d.guest !== guestName) {
+                        guestName = d.guest;
+                        updateUI();
+                        setStatus("<span style='color: #4caf50;'>Игрок успешно подключился!</span>");
+                    } else if (!isHost) {
+                        hostName = d.host;
+                        guestName = d.guest;
+                        updateUI();
+                    }
+
+                    renderChatMessages(d.messages);
+
+                } catch(e) {}
+            }, 1200);
+        }
+
+        function renderChatMessages(messagesObj) {
+            const box = document.getElementById('chat-messages');
+            if (!messagesObj) {
+                box.innerHTML = '<div style="color: #aaa; text-align: center; margin-top: 40px;">Нет сообщений...</div>';
+                return;
+            }
+
+            let html = '';
+            const keys = Object.keys(messagesObj);
+            keys.sort((a, b) => messagesObj[a].time - messagesObj[b].time);
+
+            keys.forEach(k => {
+                const msg = messagesObj[k];
+                html += `<div class="chat-msg"><b>${msg.sender}:</b> ${msg.text}</div>`;
+            });
+
+            box.innerHTML = html;
+            if (chatOpen) {
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !currentRoomCode) return;
+
+            const msgData = {
+                sender: myName,
+                text: text,
+                time: Date.now()
+            };
+
+            input.value = '';
+
+            try {
+                const url = `${DATABASE_URL}/rooms/${currentRoomCode}/messages.json`;
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(msgData)
+                });
+            } catch(e) {}
+        }
+
+        function checkEnter(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function leaveRoom() {
+            if (isHost && currentRoomCode) {
+                try {
+                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, { method: 'DELETE' });
+                } catch(e) {}
+            }
+            showMenuScreen();
+        }
+    </script>
+</body>
+</html>
