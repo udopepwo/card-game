@@ -12,7 +12,7 @@
             --green-table: #145a22;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -83,8 +83,9 @@
             border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
             cursor: pointer; font-size: 16px; font-weight: 500; color: #ffffff; text-align: left;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transition: transform 0.1s ease, background-color 0.1s ease;
         }
-        .menu-row:active { background-color: #1f2e3d; }
+        .menu-row:active { background-color: #1f2e3d; transform: scale(0.98); }
 
         .room-action-box {
             background-color: var(--blue-leather);
@@ -99,13 +100,19 @@
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 15px;
+            animation: fadeIn 0.2s ease;
         }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .modal-card {
             background-color: var(--blue-leather); background-image: var(--blue-pattern); background-size: 16px 16px;
             border: 3px solid #34495e; border-radius: 18px; width: 100%; max-width: 400px;
             padding: 22px; position: relative; text-align: center;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;
+            animation: scaleUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
         .modal-close {
             position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;
             z-index: 110; pointer-events: auto;
@@ -123,6 +130,7 @@
             flex: 1; min-width: 60px; padding: 10px; background: #1e3a29;
             border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff;
             font-size: 14px; cursor: pointer; text-align: center; font-weight: bold;
+            transition: all 0.15s ease;
         }
         .param-btn.selected {
             background: #ffffff !important; color: #16222f !important; border-color: #ffffff !important;
@@ -132,8 +140,9 @@
         button {
             color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 12px;
             cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto; z-index: 30;
+            transition: transform 0.1s ease, opacity 0.1s ease;
         }
-        button:active { opacity: 0.85; }
+        button:active { transform: scale(0.96); opacity: 0.85; }
         .btn-green { background: #27ae60; border: 1px solid rgba(255, 255, 255, 0.2); }
         .btn-white { background: #ffffff; color: #16222f; border: 2px solid #ffffff; }
         .btn-red { background: #c0392b; color: #ffffff; border: 2px solid #c0392b; }
@@ -192,9 +201,11 @@
         .battle-pairs-container {
             display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 95%; min-height: 100px; align-items: center;
         }
-        .battle-pair { position: relative; width: 55px; height: 80px; }
+        .battle-pair { position: relative; width: 55px; height: 80px; animation: popIn 0.2s ease; }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
         .battle-card-attack { position: absolute; top: 0; left: 0; z-index: 1; }
-        .battle-card-defend { position: absolute; top: 14px; left: 14px; z-index: 2; }
+        .battle-card-defend { position: absolute; top: 12px; left: 12px; z-index: 2; }
 
         .deck-zone {
             position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
@@ -223,20 +234,21 @@
         }
         .hand-cards-flex { display: flex; gap: 8px; justify-content: center; align-items: center; min-width: max-content; }
 
+        /* Стильные разноцветные масти (Червы/Бубны — красный, Пики/Трефы — премиальный темно-синий) */
         .playing-card {
-            width: 54px; height: 76px; background: #ffffff; border-radius: 6px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            width: 54px; height: 76px; background: #fdfdfd; border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); display: flex; flex-direction: column;
             justify-content: space-between; padding: 4px; font-weight: bold; font-size: 12px;
-            cursor: pointer; transition: transform 0.15s; position: relative; flex-shrink: 0; border: 1px solid #bdc3c7;
+            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; position: relative; flex-shrink: 0; border: 1px solid #dcdde1;
         }
-        .playing-card:active { transform: scale(1.1); z-index: 100; }
+        .playing-card:active { transform: translateY(-8px) scale(1.1); z-index: 100; box-shadow: 0 8px 20px rgba(0,0,0,0.6); }
         
-        .card-red { color: #e74c3c; }
-        .card-black { color: #2c3e50; }
+        .card-red { color: #e74c3c; } 
+        .card-dark { color: #1e3799; } 
         
-        .card-top-left { display: flex; flex-direction: column; align-items: center; line-height: 1; }
-        .card-center-suit { font-size: 20px; margin: auto; }
-        .card-bottom-right { display: flex; flex-direction: column; align-items: center; line-height: 1; transform: rotate(180deg); }
+        .card-top-left { display: flex; flex-direction: column; align-items: center; line-height: 1; font-size: 11px; }
+        .card-center-suit { font-size: 22px; margin: auto; }
+        .card-bottom-right { display: flex; flex-direction: column; align-items: center; line-height: 1; transform: rotate(180deg); font-size: 11px; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
@@ -319,7 +331,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 12.0.0 (Lobby Join Fix)</div>
+            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 13.0.0 (Smooth & Color Fix)</div>
         </div>
     </div>
 
@@ -414,7 +426,8 @@
         let myName = "Игрок_" + Math.floor(Math.random() * 900 + 100);
         let myUsername = "@player";
         let photoUrl = null;
-        let myRole = null; // 'p1' или 'p2'
+        let myRole = null; 
+        let lastRenderStateHash = ""; 
 
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -487,7 +500,7 @@
 
         function createCardElement(card) {
             const isRed = card.suit === '♦' || card.suit === '♥';
-            const colorClass = isRed ? 'card-red' : 'card-black';
+            const colorClass = isRed ? 'card-red' : 'card-dark';
             const cardDiv = document.createElement('div');
             cardDiv.className = `playing-card ${colorClass}`;
             cardDiv.innerHTML = `
@@ -498,7 +511,6 @@
             return cardDiv;
         }
 
-        // Создать игру -> Я p1
         window.createDurakRoom = async function() {
             durakSettings.bet = document.getElementById('durak-bet').value || 100;
             document.getElementById('durak-settings-modal').style.display = 'none';
@@ -523,7 +535,6 @@
             startRoomPolling(randomCode);
         };
 
-        // Войти по коду -> Автоматически определяем роль (p1 если свободен или это мы, иначе p2)
         window.joinRoomByCode = async function() {
             const code = document.getElementById('room-code-input').value.trim();
             if (code.length !== 4) { alert("Введите 4 цифры кода!"); return; }
@@ -599,10 +610,9 @@
                 } else {
                     openLobbyUI(d);
                 }
-            }, 1000);
+            }, 1200);
         }
 
-        // Старт игры
         window.startGameNow = async function() {
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             const room = await res.json();
@@ -634,6 +644,20 @@
         };
 
         function renderGameTable(room) {
+            let stateHash = JSON.stringify({
+                pairs: room.game.tablePairs,
+                deckLen: room.game.deck ? room.game.deck.length : 0,
+                p1Cards: room.p1.cards ? room.p1.cards.length : 0,
+                p2Cards: room.p2.cards ? room.p2.cards.length : 0,
+                myHand: room[myRole].cards,
+                attacker: room.game.attacker,
+                defender: room.game.defender,
+                status: room.game.statusText
+            });
+
+            if (stateHash === lastRenderStateHash) return;
+            lastRenderStateHash = stateHash;
+
             document.getElementById('table-room-code').innerText = `Стол #${room.code}`;
             document.getElementById('trump-info').innerText = `Козырь: ${room.game.trump.rank}${room.game.trump.suit}`;
             
@@ -770,9 +794,11 @@
             }
 
             room[myRole] = myData;
+            lastRenderStateHash = ""; 
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
             });
+            renderGameTable(room);
         }
 
         async function actionBito() {
@@ -795,13 +821,15 @@
             room.game.attacker = oldDef;
             room.game.statusText = `Бито! Ходит ${room[oldDef].name}`;
 
+            lastRenderStateHash = "";
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
             });
+            renderGameTable(room);
         }
 
         async function actionTake() {
-            const res = await fetch(`${DATABASE_URL},rooms/${currentRoomCode}.json`);
+            const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             let room = await res.json();
 
             let defData = room[room.game.defender];
@@ -820,13 +848,16 @@
             room.game.deck = deck;
             room.game.statusText = `${defData.name} забрал карты!`;
 
+            lastRenderStateHash = "";
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
             });
+            renderGameTable(room);
         }
 
         window.leaveRoom = function() {
             if (gamePollTimer) clearInterval(gamePollTimer);
+            lastRenderStateHash = "";
             document.getElementById('game-table-screen').style.display = 'none';
             document.getElementById('lobby-screen').style.display = 'none';
             document.getElementById('menu-screen').style.display = 'flex';
