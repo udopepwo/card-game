@@ -92,7 +92,7 @@
             border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
             padding: 15px; max-width: 400px; margin: 0 auto 15px auto; width: 100%;
             box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-            z-index: 15; pointer-events: auto;
+            z-index: 20; pointer-events: auto;
         }
 
         /* Модальные окна */
@@ -108,6 +108,7 @@
         }
         .modal-close {
             position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;
+            z-index: 110; pointer-events: auto;
         }
         .avatar-large {
             width: 75px; height: 75px; border-radius: 50%; background: #2481cc; border: 4px solid #ffeb3b;
@@ -128,11 +129,9 @@
             box-shadow: 0 2px 8px rgba(255,255,255,0.5);
         }
 
-        .range-slider-container { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
-
         button {
             color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 12px;
-            cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto;
+            cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto; z-index: 30;
         }
         button:active { opacity: 0.85; }
         .btn-green { background: #27ae60; border: 1px solid rgba(255, 255, 255, 0.2); }
@@ -142,7 +141,7 @@
         input[type="text"], input[type="number"] {
             padding: 12px; font-size: 16px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); text-align: center; width: 100%;
-            background: rgba(0,0,0,0.5); color: #fff; pointer-events: auto;
+            background: rgba(0,0,0,0.5); color: #fff; pointer-events: auto; z-index: 30;
         }
 
         /* ЛОББИ СТОЛА */
@@ -217,29 +216,13 @@
 
         .game-actions-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 8px; z-index: 80; }
 
-        /* ЗОНА РУКИ С КАРТАМИ */
         .player-hand-area {
-            width: 100%;
-            min-height: 110px;
-            padding: 10px 5px 25px 5px;
-            background: rgba(0, 0, 0, 0.35);
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: auto;
-            position: relative;
-            z-index: 90;
+            width: 100%; min-height: 110px; padding: 10px 5px 25px 5px;
+            background: rgba(0, 0, 0, 0.35); border-top: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex; justify-content: center; align-items: center; overflow-x: auto; position: relative; z-index: 90;
         }
-        .hand-cards-flex {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            align-items: center;
-            min-width: max-content;
-        }
+        .hand-cards-flex { display: flex; gap: 8px; justify-content: center; align-items: center; min-width: max-content; }
 
-        /* Стиль карт */
         .playing-card {
             width: 54px; height: 76px; background: #ffffff; border-radius: 6px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column;
@@ -336,7 +319,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 11.0.0 (Hand Display Fix)</div>
+            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 12.0.0 (Lobby Join Fix)</div>
         </div>
     </div>
 
@@ -382,7 +365,7 @@
             <div id="room-header-text" style="font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px;">Стол: Код 0000</div>
             <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 15px;">Ставка: 100 | Игроков: 1/2</div>
             
-            <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin: 15px 0; flex-wrap: wrap;" id="lobby-slots-container"></div>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin: 15px 0;" id="lobby-slots-container"></div>
 
             <div style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:10px;">
                 <button class="btn-white" id="start-game-btn" onclick="startGameNow()" style="width: 100%; padding: 14px;">Начать игру</button>
@@ -431,6 +414,7 @@
         let myName = "Игрок_" + Math.floor(Math.random() * 900 + 100);
         let myUsername = "@player";
         let photoUrl = null;
+        let myRole = null; // 'p1' или 'p2'
 
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -455,7 +439,6 @@
         let durakSettings = { bet: 100, players: 2, deck: '36' };
         let currentRoomCode = null;
         let gamePollTimer = null;
-        let myRole = null; // 'p1' или 'p2'
 
         const SUIT_RANKS = { '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
 
@@ -515,7 +498,7 @@
             return cardDiv;
         }
 
-        // Создать игру -> Я становлюсь Игроком 1 (p1)
+        // Создать игру -> Я p1
         window.createDurakRoom = async function() {
             durakSettings.bet = document.getElementById('durak-bet').value || 100;
             document.getElementById('durak-settings-modal').style.display = 'none';
@@ -540,7 +523,7 @@
             startRoomPolling(randomCode);
         };
 
-        // Войти по коду -> Я становлюсь Игроком 2 (p2)
+        // Войти по коду -> Автоматически определяем роль (p1 если свободен или это мы, иначе p2)
         window.joinRoomByCode = async function() {
             const code = document.getElementById('room-code-input').value.trim();
             if (code.length !== 4) { alert("Введите 4 цифры кода!"); return; }
@@ -552,7 +535,15 @@
 
             if (roomData.p1 && roomData.p1.name === myName) {
                 myRole = 'p1';
-            } else if (!roomData.p2 || roomData.p2.name === myName) {
+            } else if (roomData.p2 && roomData.p2.name === myName) {
+                myRole = 'p2';
+            } else if (!roomData.p1) {
+                myRole = 'p1';
+                roomData.p1 = { name: myName, photo: photoUrl, cards: [] };
+                await fetch(`${DATABASE_URL}/rooms/${code}/p1.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData.p1)
+                });
+            } else if (!roomData.p2) {
                 myRole = 'p2';
                 roomData.p2 = { name: myName, photo: photoUrl, cards: [] };
                 await fetch(`${DATABASE_URL}/rooms/${code}/p2.json`, {
@@ -572,12 +563,21 @@
             document.getElementById('room-params-info').innerText = `Ставка: ${roomData.settings.bet} | Игроков: ${count}/2`;
             
             const container = document.getElementById('lobby-slots-container');
+            
+            let p1Html = roomData.p1 && roomData.p1.photo 
+                ? `<img src="${roomData.p1.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
+                : `<span style="font-weight:bold;color:#fff;">P1</span>`;
+
+            let p2Html = roomData.p2 && roomData.p2.photo 
+                ? `<img src="${roomData.p2.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
+                : (roomData.p2 ? `<span style="font-weight:bold;color:#fff;">P2</span>` : `<span style="color:#aaa;font-size:20px;">+</span>`);
+
             container.innerHTML = `
-                <div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px solid ${roomData.p1 ? '#2ecc71' : '#bdc3c7'}; display: flex; align-items: center; justify-content: center; overflow:hidden;">
-                    ${roomData.p1 && roomData.p1.photo ? `<img src="${roomData.p1.photo}" style="width:100%;height:100%;object-fit:cover;">` : 'P1'}
+                <div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px solid ${roomData.p1 ? '#2ecc71' : '#bdc3c7'}; display: flex; align-items: center; justify-content: center; overflow:hidden;" title="${roomData.p1 ? roomData.p1.name : 'Пусто'}">
+                    ${p1Html}
                 </div>
-                <div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px solid ${roomData.p2 ? '#2ecc71' : '#bdc3c7'}; display: flex; align-items: center; justify-content: center; overflow:hidden;">
-                    ${roomData.p2 && roomData.p2.photo ? `<img src="${roomData.p2.photo}" style="width:100%;height:100%;object-fit:cover;">` : 'P2'}
+                <div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px solid ${roomData.p2 ? '#2ecc71' : '#bdc3c7'}; display: flex; align-items: center; justify-content: center; overflow:hidden;" title="${roomData.p2 ? roomData.p2.name : 'Пусто'}">
+                    ${p2Html}
                 </div>
             `;
 
@@ -602,11 +602,16 @@
             }, 1000);
         }
 
-        // Старт игры -> Раздача ровно по 6 карт для p1 и p2
+        // Старт игры
         window.startGameNow = async function() {
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             const room = await res.json();
             
+            if (!room.p1 || !room.p2) {
+                alert("Дождитесь второго игрока!");
+                return;
+            }
+
             const deck = generateDeck(room.settings.deck);
             const trump = deck[deck.length - 1];
 
@@ -647,12 +652,10 @@
                 trumpSlot.innerHTML = `<div style="font-size:11px; color:#ffeb3b;">Козырь: ${room.game.trump.suit}</div>`;
             }
 
-            // Узнаем, кто я (p1 или p2)
             let oppRole = myRole === 'p1' ? 'p2' : 'p1';
             let oppData = room[oppRole] || { name: 'Соперник', cards: [] };
             let myData = room[myRole] || { name: 'Я', cards: [] };
 
-            // Оппонент на столе
             const oppContainer = document.getElementById('table-opponents-container');
             oppContainer.innerHTML = `
                 <div class="opponent-seat">
@@ -664,7 +667,6 @@
                 </div>
             `;
 
-            // Карты на столе
             const battleArea = document.getElementById('battle-pairs-area');
             battleArea.innerHTML = '';
             (room.game.tablePairs || []).forEach(pair => {
@@ -685,7 +687,6 @@
                 battleArea.appendChild(pairDiv);
             });
 
-            // РЕНДЕР КАРТ НА РУКАХ — ПРЯМОЕ ДОБАВЛЕНИЕ В DOM
             const handContainer = document.getElementById('player-hand-container');
             handContainer.innerHTML = '';
             if (myData.cards && myData.cards.length > 0) {
@@ -714,7 +715,6 @@
             document.getElementById('btn-take').style.display = (isDefender && room.game.tablePairs.length > 0 && !allBeaten) ? 'inline-block' : 'none';
         }
 
-        // Нажатие на карту в руке
         async function onCardClick(card) {
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             let room = await res.json();
@@ -735,7 +735,7 @@
                         if (p.defend) tableRanks.push(p.defend.rank);
                     });
                     if (!tableRanks.includes(card.rank)) {
-                        alert("Можно подкидывать только карты тех мастей/рангов, что есть на столе!");
+                        alert("Можно подкидывать только карты тех рангов, что есть на столе!");
                         return;
                     }
                 }
@@ -775,7 +775,6 @@
             });
         }
 
-        // БИТО
         async function actionBito() {
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             let room = await res.json();
@@ -783,11 +782,9 @@
             room.game.tablePairs = [];
             let deck = room.game.deck || [];
 
-            // 1. Атакующий добирает до 6 карт
             while (room[room.game.attacker].cards.length < 6 && deck.length > 0) {
                 room[room.game.attacker].cards.push(deck.shift());
             }
-            // 2. Защищающийся добирает до 6 карт
             while (room[room.game.defender].cards.length < 6 && deck.length > 0) {
                 room[room.game.defender].cards.push(deck.shift());
             }
@@ -803,9 +800,8 @@
             });
         }
 
-        // ВЗЯТЬ
         async function actionTake() {
-            const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+            const res = await fetch(`${DATABASE_URL},rooms/${currentRoomCode}.json`);
             let room = await res.json();
 
             let defData = room[room.game.defender];
