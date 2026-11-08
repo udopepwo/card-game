@@ -7,11 +7,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            /* Ромбовидная синяя текстура кожи (встроена напрямую через SVG-узор) */
             --blue-leather: #16222f;
-            --blue-pattern: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
-            
-            /* Зеленое сукно для стола */
+            --blue-pattern: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
             --green-felt: #145a22;
         }
 
@@ -28,6 +25,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            box-sizing: border-box;
         }
 
         /* Верхняя панель */
@@ -39,23 +37,24 @@
             border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 18px;
             max-width: 400px;
-            margin: 55px auto 0 auto;
+            margin: 15px auto 0 auto;
             width: 92%;
-            padding: 12px 18px;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-sizing: border-box;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            flex-shrink: 0;
         }
         .top-user-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             cursor: pointer;
         }
         .avatar-top {
-            width: 44px; height: 44px; border-radius: 50%;
+            width: 40px; height: 40px; border-radius: 50%;
             background: #2481cc; border: 3px solid #ffeb3b;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; flex-shrink: 0;
@@ -65,58 +64,58 @@
         .top-currencies {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 14px;
         }
         .currency-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: rgba(0,0,0,0.5);
-            padding: 6px 14px;
-            border-radius: 22px;
+            padding: 6px 12px;
+            border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.2);
             cursor: pointer;
         }
 
-        /* Меню */
+        /* Главное меню */
         .menu-wrapper {
             max-width: 400px;
             margin: auto auto;
-            padding: 0 15px;
+            padding: 10px 15px;
             width: 100%;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .menu-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
         .menu-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 18px 22px;
+            padding: 16px 20px;
             background-color: var(--blue-leather);
             background-image: var(--blue-pattern);
             background-size: 16px 16px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
             cursor: pointer;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 500;
             color: #ffffff;
             text-align: left;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
         .menu-row:active { background-color: #1f2e3d; }
-        .menu-row-left { display: flex; align-items: center; gap: 16px; }
-        .menu-row-right { color: #bdc3c7; font-size: 15px; }
+        .menu-row-left { display: flex; align-items: center; gap: 14px; }
+        .menu-row-right { color: #bdc3c7; font-size: 14px; }
 
         /* Нижний блок создания/входа */
         .room-action-box {
@@ -125,12 +124,13 @@
             background-size: 16px 16px;
             border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
-            padding: 18px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            padding: 15px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
             max-width: 400px;
             margin: 0 auto 15px auto;
             width: 92%;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         /* Модальные окна */
@@ -143,54 +143,54 @@
             background-image: var(--blue-pattern);
             background-size: 16px 16px;
             border: 3px solid #34495e; border-radius: 18px;
-            width: 100%; max-width: 400px; padding: 25px; box-sizing: border-box; position: relative; text-align: center;
+            width: 100%; max-width: 400px; padding: 22px; box-sizing: border-box; position: relative; text-align: center;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;
         }
         .modal-close {
-            position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 22px; cursor: pointer;
+            position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;
         }
         .avatar-large {
-            width: 80px; height: 80px; border-radius: 50%; background: #2481cc; border: 4px solid #ffeb3b;
-            margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
+            width: 75px; height: 75px; border-radius: 50%; background: #2481cc; border: 4px solid #ffeb3b;
+            margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         .avatar-large img { width: 100%; height: 100%; object-fit: cover; }
         
         .friends-box {
-            margin-top: 12px; text-align: left; font-size: 14px;
-            background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; max-height: 180px; overflow-y: auto;
+            margin-top: 10px; text-align: left; font-size: 13px;
+            background: rgba(0,0,0,0.4); padding: 8px; border-radius: 12px; max-height: 150px; overflow-y: auto;
             border: 1px solid rgba(255,255,255,0.1);
         }
         .friend-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; justify-content: space-between; align-items: center; padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.06);
             cursor: pointer;
         }
         .friend-item:hover { color: #2ecc71; }
 
         /* Параметры игры */
         .game-param-group {
-            text-align: left; margin: 16px 0; font-size: 15px;
+            text-align: left; margin: 14px 0; font-size: 14px;
         }
         .game-param-title {
-            color: #f1c40f; font-weight: bold; margin-bottom: 8px;
+            color: #f1c40f; font-weight: bold; margin-bottom: 6px;
         }
         .param-options {
-            display: flex; gap: 10px; flex-wrap: wrap;
+            display: flex; gap: 8px; flex-wrap: wrap;
         }
         .param-btn {
-            flex: 1; min-width: 70px; padding: 12px; 
+            flex: 1; min-width: 60px; padding: 10px; 
             background: #1e3a29; border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px; color: #fff; font-size: 15px; cursor: pointer; text-align: center; font-weight: bold;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            border-radius: 10px; color: #fff; font-size: 14px; cursor: pointer; text-align: center; font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
         .param-btn.selected {
             background: #ffffff !important;
             color: #16222f !important;
             border-color: #ffffff !important;
-            box-shadow: 0 2px 10px rgba(255,255,255,0.5);
+            box-shadow: 0 2px 8px rgba(255,255,255,0.5);
         }
 
         .range-slider-container {
-            background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
         }
         input[type=range] {
             width: 100%; accent-color: #2ecc71; cursor: pointer;
@@ -199,9 +199,9 @@
         /* Кнопки */
         button {
             color: white; border: none;
-            padding: 14px 22px; font-size: 16px; border-radius: 14px;
+            padding: 12px 20px; font-size: 15px; border-radius: 12px;
             cursor: pointer; font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
         button:active { opacity: 0.85; }
         
@@ -224,7 +224,7 @@
         }
 
         input[type="text"], input[type="number"] {
-            padding: 14px; font-size: 17px; border-radius: 14px;
+            padding: 12px; font-size: 16px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); text-align: center; width: 100%;
             box-sizing: border-box; background: rgba(0,0,0,0.5); color: #fff;
         }
@@ -238,17 +238,17 @@
         <div class="top-user-info" onclick="openMyProfile()">
             <div class="avatar-top" id="avatar-top-box">👤</div>
             <div style="text-align: left; line-height: 1.2;">
-                <div id="top-username" style="font-weight: bold; font-size: 15px; color: #fff;">Игрок</div>
-                <div style="font-size: 12px; color: #bdc3c7;">Новичок</div>
+                <div id="top-username" style="font-weight: bold; font-size: 14px; color: #fff;">Игрок</div>
+                <div style="font-size: 11px; color: #bdc3c7;">Новичок</div>
             </div>
         </div>
         <div class="top-currencies">
             <div class="currency-item" onclick="openBalanceModal()" title="Фишки">
                 <span>🪙</span> <span id="chips-val">0</span>
             </div>
-            <div id="bell-btn" style="position:relative; cursor:pointer; font-size:24px; padding: 0 6px;" title="Уведомления">
+            <div id="bell-btn" style="position:relative; cursor:pointer; font-size:22px; padding: 0 5px;" title="Уведомления">
                 🔔
-                <div class="bell-badge" id="bell-badge" style="position:absolute; top:-4px; right:0; background:#e74c3c; color:white; font-size:11px; width:17px; height:17px; border-radius:50%; display:none; align-items:center; justify-content:center;">0</div>
+                <div class="bell-badge" id="bell-badge" style="position:absolute; top:-3px; right:0; background:#e74c3c; color:white; font-size:10px; width:16px; height:16px; border-radius:50%; display:none; align-items:center; justify-content:center;">0</div>
             </div>
         </div>
     </div>
@@ -258,17 +258,17 @@
         <div class="modal-card">
             <button class="modal-close" id="close-profile">✕</button>
             <div class="avatar-large" id="modal-avatar">👤</div>
-            <h3 id="modal-profile-name" style="margin: 5px 0 0 0; font-size: 19px; color: #2ecc71;">Игрок</h3>
-            <div id="modal-profile-username" style="font-size: 13px; color: #bdc3c7; margin-bottom: 3px;">@username</div>
-            <div id="modal-profile-status" style="font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #2ecc71;">🟢 В сети</div>
+            <h3 id="modal-profile-name" style="margin: 5px 0 0 0; font-size: 18px; color: #2ecc71;">Игрок</h3>
+            <div id="modal-profile-username" style="font-size: 12px; color: #bdc3c7; margin-bottom: 2px;">@username</div>
+            <div id="modal-profile-status" style="font-size: 12px; font-weight: bold; margin-bottom: 10px; color: #2ecc71;">🟢 В сети</div>
 
-            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 14px; padding: 12px; text-align: left; font-size: 14px;">
-                <div style="color: #f1c40f; font-weight: bold; margin-bottom: 5px;">🏆 Победы:</div>
-                <div style="display:flex; justify-content:space-between; margin:3px 0; color:#ccc;">Дурак: <span style="color:#fff;">0</span></div>
-                <div style="display:flex; justify-content:space-between; margin:3px 0; color:#ccc;">Покер: <span style="color:#fff;">0</span></div>
-                <div style="display:flex; justify-content:space-between; margin:3px 0; color:#ccc;">Сундучок: <span style="color:#fff;">0</span></div>
+            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 12px; padding: 10px; text-align: left; font-size: 13px;">
+                <div style="color: #f1c40f; font-weight: bold; margin-bottom: 4px;">🏆 Победы:</div>
+                <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Дурак: <span style="color:#fff;">0</span></div>
+                <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Покер: <span style="color:#fff;">0</span></div>
+                <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Сундучок: <span style="color:#fff;">0</span></div>
                 
-                <div style="color: #f1c40f; font-weight: bold; margin-top: 10px; margin-bottom: 5px;">👥 Друзья (<span id="friends-count">0</span>):</div>
+                <div style="color: #f1c40f; font-weight: bold; margin-top: 8px; margin-bottom: 4px;">👥 Друзья (<span id="friends-count">0</span>):</div>
                 <div class="friends-box" id="friends-list-container">
                     <div style="color:#888; text-align:center;">Список пуст</div>
                 </div>
@@ -276,15 +276,15 @@
         </div>
     </div>
 
-    <!-- Настройки (Версия 3.8.0) -->
+    <!-- Настройки (Версия 3.9.0) -->
     <div id="settings-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 14px; padding: 18px; margin-top: 18px; text-align: center;">
-                <p style="color:#ccc; font-size:15px; margin:0 0 12px 0;">Текущая версия приложения:</p>
-                <div style="font-size: 22px; font-weight: bold; color: #2ecc71;">Версия 3.8.0</div>
-                <p style="color:#888; font-size:13px; margin-top:12px;">Интерфейс обновлен локально.</p>
+            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; margin-top: 15px; text-align: center;">
+                <p style="color:#ccc; font-size:14px; margin:0 0 10px 0;">Текущая версия приложения:</p>
+                <div style="font-size: 20px; font-weight: bold; color: #2ecc71;">Версия 3.9.0</div>
+                <p style="color:#888; font-size:12px; margin-top:10px;">Интерфейс стабилизирован.</p>
             </div>
         </div>
     </div>
@@ -294,15 +294,15 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('game-select-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">🎮 Выбор игры</h3>
-            <div style="display:flex; flex-direction:column; gap:14px; margin-top:18px;">
-                <button class="btn-green" onclick="openDurakSettings()" style="padding:16px; font-size:17px;">🃏 Дурак Онлайн</button>
-                <button style="background:#2980b9; padding:16px; font-size:17px;" onclick="alert('Покер в разработке')">🎲 Покер</button>
-                <button style="background:#8e44ad; padding:16px; font-size:17px;" onclick="alert('Сундучок в разработке')">📦 Сундучок</button>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+                <button class="btn-green" onclick="openDurakSettings()" style="padding:14px; font-size:16px;">🃏 Дурак Онлайн</button>
+                <button style="background:#2980b9; padding:14px; font-size:16px;" onclick="alert('Покер в разработке')">🎲 Покер</button>
+                <button style="background:#8e44ad; padding:14px; font-size:16px;" onclick="alert('Сундучок в разработке')">📦 Сундучок</button>
             </div>
         </div>
     </div>
 
-    <!-- Настройки Дурака -->
+    <!-- Настройки Дурака (Лимит игроков до 9) -->
     <div id="durak-settings-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('durak-settings-modal').style.display='none'">✕</button>
@@ -316,7 +316,8 @@
             <div class="game-param-group">
                 <div class="game-param-title">Количество игроков: <span id="players-count-val" style="color:#2ecc71; font-weight:bold;">2</span></div>
                 <div class="range-slider-container">
-                    <input type="range" id="players-range" min="2" max="6" value="2" oninput="updatePlayersCount(this.value)">
+                    <!-- Лимит игроков изменен до 9 -->
+                    <input type="range" id="players-range" min="2" max="9" value="2" oninput="updatePlayersCount(this.value)">
                 </div>
             </div>
 
@@ -337,7 +338,7 @@
                 </div>
             </div>
 
-            <button class="btn-green" onclick="createDurakRoom()" style="width:100%; padding:16px; margin-top:18px; font-size:17px;">Создать стол</button>
+            <button class="btn-green" onclick="createDurakRoom()" style="width:100%; padding:14px; margin-top:15px; font-size:16px;">Создать стол</button>
         </div>
     </div>
 
@@ -356,10 +357,10 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('stats-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">🏆 Статистика побед</h3>
-            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 14px; padding: 14px; text-align: left; font-size: 15px;">
-                <div style="display:flex; justify-content:space-between; margin:7px 0; color:#ccc;">Дурак: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
-                <div style="display:flex; justify-content:space-between; margin:7px 0; color:#ccc;">Покер: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
-                <div style="display:flex; justify-content:space-between; margin:7px 0; color:#ccc;">Сундучок: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
+            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 12px; padding: 12px; text-align: left; font-size: 14px;">
+                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Дурак: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
+                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Покер: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
+                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Сундучок: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
             </div>
         </div>
     </div>
@@ -368,9 +369,9 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('balance-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">🪙 Фишки</h3>
-            <p style="font-size:15px; color:#ccc; margin: 12px 0;">Ваш текущий баланс:</p>
-            <div style="font-size: 30px; font-weight: bold; color: #2ecc71; margin-bottom: 18px;">0 фишек</div>
-            <p style="color:#888; font-size:13px; margin-top:12px;">Ежедневный бонус будет доступен позже.</p>
+            <p style="font-size:14px; color:#ccc; margin: 10px 0;">Ваш текущий баланс:</p>
+            <div style="font-size: 28px; font-weight: bold; color: #2ecc71; margin-bottom: 15px;">0 фишек</div>
+            <p style="color:#888; font-size:12px; margin-top:10px;">Ежедневный бонус будет доступен позже.</p>
         </div>
     </div>
 
@@ -394,33 +395,28 @@
 
     <!-- Кнопки внизу -->
     <div id="menu-bottom-actions" class="room-action-box">
-        <button class="btn-green" onclick="document.getElementById('game-select-modal').style.display='flex'" style="width: 100%; padding: 16px; font-size: 17px; margin-bottom: 15px;">Создать игру</button>
-        <div style="display:flex; gap:10px;">
+        <button class="btn-green" onclick="document.getElementById('game-select-modal').style.display='flex'" style="width: 100%; padding: 14px; font-size: 16px; margin-bottom: 12px;">Создать игру</button>
+        <div style="display:flex; gap:8px;">
             <input type="text" id="room-code-input" placeholder="Код стола" maxlength="4">
-            <button class="btn-green" style="padding: 14px 24px;">Войти</button>
+            <button class="btn-green" style="padding: 12px 20px;">Войти</button>
         </div>
     </div>
 
     <!-- Игровое лобби (Стол) -->
     <div id="lobby-screen" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; padding:10px; box-sizing:border-box; gap:15px;">
-        <div style="background: var(--green-felt); border: 5px solid #0d3811; border-radius: 22px; padding: 30px; margin: 0 auto; max-width: 420px; width: 92%; box-shadow: 0 12px 35px rgba(0,0,0,0.7);">
-            <div id="room-header-text" style="font-size: 19px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Стол: Код 0000</div>
-            <div id="room-params-info" style="font-size: 14px; color: #eee; margin-bottom: 18px; text-shadow: 0 1px 3px rgba(0,0,0,0.4);">Ставка: 100 | Колода: 36 | Игроков: 2</div>
+        <div style="background: var(--green-felt); border: 5px solid #0d3811; border-radius: 20px; padding: 20px; margin: 0 auto; max-width: 420px; width: 92%; box-shadow: 0 10px 30px rgba(0,0,0,0.7);">
+            <div id="room-header-text" style="font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Стол: Код 0000</div>
+            <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 15px; text-shadow: 0 1px 3px rgba(0,0,0,0.4);">Ставка: 100 | Колода: 36 | Игроков: 2</div>
             
-            <div style="display: flex; justify-content: center; gap: 22px; margin: 18px 0 12px 0;" id="players-slots-container">
-                <div style="width: 68px; height: 68px; border-radius: 50%; background: #15222e; border: 3px solid #2ecc71; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                    <span id="slot-0-avatar">👤</span>
-                    <div style="position: absolute; top: -11px; right: -6px; font-size: 15px; background: #ffeb3b; color: #000; border-radius: 50%; width: 23px; height: 23px; display: flex; align-items: center; justify-content: center; border: 1px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">👑</div>
-                </div>
-                <div style="width: 68px; height: 68px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 26px;">
-                    +
-                </div>
+            <!-- Динамические слоты для игроков (поддерживает до 9 человек) -->
+            <div style="display: flex; justify-content: center; gap: 12px; margin: 15px 0 10px 0; flex-wrap: wrap;" id="players-slots-container">
+                <!-- Слоты будут генерироваться автоматически через JS в зависимости от выбранного числа игроков -->
             </div>
         </div>
 
-        <div style="width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px;">
-            <button class="btn-white" id="start-btn" style="width: 100%; padding: 16px;">Готов! (1/2)</button>
-            <button class="btn-red" onclick="leaveRoom()" style="width: 100%; padding: 14px;">Выйти в меню</button>
+        <div style="width:100%; max-width:340px; display:flex; flex-direction:column; gap:10px;">
+            <button class="btn-white" id="start-btn" style="width: 100%; padding: 14px;">Готов! (1/2)</button>
+            <button class="btn-red" onclick="leaveRoom()" style="width: 100%; padding: 12px;">Выйти в меню</button>
         </div>
     </div>
 
@@ -474,11 +470,31 @@
                 document.getElementById('room-header-text').innerText = `Стол: Код ${randomCode}`;
                 document.getElementById('room-params-info').innerText = `Ставка: ${durakSettings.bet} | Колода: ${durakSettings.deck} | Игроков: ${durakSettings.players} | ${durakSettings.type === 'podkidnoy' ? 'Подкидной' : 'Переводной'}`;
                 
-                if (photoUrl) {
-                    document.getElementById('slot-0-avatar').innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                // Рендерим слоты игроков в зависимости от выбранного количества (до 9)
+                const container = document.getElementById('players-slots-container');
+                container.innerHTML = '';
+                
+                for (let i = 0; i < durakSettings.players; i++) {
+                    if (i === 0) {
+                        // Хозяин стола
+                        container.innerHTML += `
+                            <div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px solid #2ecc71; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                                <span id="slot-0-avatar">${photoUrl ? `<img src="${photoUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : '👤'}</span>
+                                <div style="position: absolute; top: -9px; right: -5px; font-size: 12px; background: #ffeb3b; color: #000; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid #fff;">👑</div>
+                            </div>
+                        `;
+                    } else {
+                        // Пустые слоты для остальных игроков
+                        container.innerHTML += `
+                            <div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 22px;">
+                                +
+                            </div>
+                        `;
+                    }
                 }
 
-                document.getElementById('menu-screen').style.display, document.getElementById('menu-bottom-actions').style.display = 'none', 'none';
+                document.getElementById('menu-screen').style.display = 'none';
+                document.getElementById('menu-bottom-actions').style.display = 'none';
                 document.getElementById('lobby-screen').style.display = 'flex';
             };
 
