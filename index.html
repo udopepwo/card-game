@@ -2,57 +2,60 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Дурак Онлайн Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --blue-leather: #16222f;
             --blue-pattern: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
-            --green-felt: #145a22;
+            --green-table: #145a22;
         }
 
         body {
             font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(rgba(11, 17, 23, 0.9), rgba(11, 17, 23, 0.95)), 
-                        url('https://images.unsplash.com/photo-1596838132731-3301c3fd4317?q=80&w=1000&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover;
+            background: #0b1117;
             color: #ffffff;
             margin: 0;
             padding: 0;
             text-align: center;
-            min-height: 100vh;
+            overflow: hidden;
+            height: 100vh;
+            user-select: none;
+        }
+
+        /* Главное меню и модалки */
+        .menu-container {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(11, 17, 23, 0.9), rgba(11, 17, 23, 0.95)), 
+                        url('https://images.unsplash.com/photo-1596838132731-3301c3fd4317?q=80&w=1000&auto=format&fit=crop') no-repeat center center;
+            background-size: cover;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            padding: 15px;
             box-sizing: border-box;
+            z-index: 10;
+            overflow-y: auto;
         }
 
-        /* Верхняя панель */
         .top-bar {
             background-color: var(--blue-leather);
             background-image: var(--blue-pattern);
             background-size: 16px 16px;
-            backdrop-filter: blur(12px);
             border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 18px;
             max-width: 400px;
-            margin: 15px auto 0 auto;
-            width: 92%;
+            margin: 10px auto 0 auto;
+            width: 100%;
             padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-sizing: border-box;
             box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-            flex-shrink: 0;
         }
-        .top-user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
+        .top-user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .avatar-top {
             width: 40px; height: 40px; border-radius: 50%;
             background: #2481cc; border: 3px solid #ffeb3b;
@@ -61,76 +64,34 @@
         }
         .avatar-top img { width: 100%; height: 100%; object-fit: cover; }
         
-        .top-currencies {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-            font-size: 14px;
-        }
+        .top-currencies { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; }
         .currency-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(0,0,0,0.5);
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(0,0,0,0.5); padding: 6px 12px;
+            border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);
             cursor: pointer;
         }
 
-        /* Главное меню */
         .menu-wrapper {
-            max-width: 400px;
-            margin: auto auto;
-            padding: 10px 15px;
-            width: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .menu-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            max-width: 400px; margin: auto; width: 100%;
+            display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
         }
         .menu-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            background-color: var(--blue-leather);
-            background-image: var(--blue-pattern);
-            background-size: 16px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            color: #ffffff;
-            text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 20px; background-color: var(--blue-leather);
+            background-image: var(--blue-pattern); background-size: 16px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
+            cursor: pointer; font-size: 16px; font-weight: 500; color: #ffffff; text-align: left;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
         .menu-row:active { background-color: #1f2e3d; }
-        .menu-row-left { display: flex; align-items: center; gap: 14px; }
-        .menu-row-right { color: #bdc3c7; font-size: 14px; }
 
-        /* Нижний блок создания/входа */
         .room-action-box {
             background-color: var(--blue-leather);
-            background-image: var(--blue-pattern);
-            background-size: 16px 16px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-            max-width: 400px;
-            margin: 0 auto 15px auto;
-            width: 92%;
-            box-sizing: border-box;
-            flex-shrink: 0;
+            background-image: var(--blue-pattern); background-size: 16px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
+            padding: 15px; max-width: 400px; margin: 0 auto 10px auto; width: 100%;
+            box-sizing: border-box; box-shadow: 0 6px 18px rgba(0,0,0,0.5);
         }
 
         /* Модальные окна */
@@ -139,11 +100,9 @@
             background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 15px;
         }
         .modal-card {
-            background-color: var(--blue-leather);
-            background-image: var(--blue-pattern);
-            background-size: 16px 16px;
-            border: 3px solid #34495e; border-radius: 18px;
-            width: 100%; max-width: 400px; padding: 22px; box-sizing: border-box; position: relative; text-align: center;
+            background-color: var(--blue-leather); background-image: var(--blue-pattern); background-size: 16px 16px;
+            border: 3px solid #34495e; border-radius: 18px; width: 100%; max-width: 400px;
+            padding: 22px; box-sizing: border-box; position: relative; text-align: center;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;
         }
         .modal-close {
@@ -166,97 +125,204 @@
         }
         .friend-item:hover { color: #2ecc71; }
 
-        /* Параметры игры */
-        .game-param-group {
-            text-align: left; margin: 14px 0; font-size: 14px;
-        }
-        .game-param-title {
-            color: #f1c40f; font-weight: bold; margin-bottom: 6px;
-        }
-        .param-options {
-            display: flex; gap: 8px; flex-wrap: wrap;
-        }
+        .game-param-group { text-align: left; margin: 14px 0; font-size: 14px; }
+        .game-param-title { color: #f1c40f; font-weight: bold; margin-bottom: 6px; }
+        .param-options { display: flex; gap: 8px; flex-wrap: wrap; }
         .param-btn {
-            flex: 1; min-width: 60px; padding: 10px; 
-            background: #1e3a29; border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px; color: #fff; font-size: 14px; cursor: pointer; text-align: center; font-weight: bold;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            flex: 1; min-width: 60px; padding: 10px; background: #1e3a29;
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff;
+            font-size: 14px; cursor: pointer; text-align: center; font-weight: bold;
         }
         .param-btn.selected {
-            background: #ffffff !important;
-            color: #16222f !important;
-            border-color: #ffffff !important;
+            background: #ffffff !important; color: #16222f !important; border-color: #ffffff !important;
             box-shadow: 0 2px 8px rgba(255,255,255,0.5);
         }
 
-        .range-slider-container {
-            background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-        }
-        input[type=range] {
-            width: 100%; accent-color: #2ecc71; cursor: pointer;
-        }
+        .range-slider-container { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        input[type=range] { width: 100%; accent-color: #2ecc71; cursor: pointer; }
 
-        /* Кнопки */
         button {
-            color: white; border: none;
-            padding: 12px 20px; font-size: 15px; border-radius: 12px;
-            cursor: pointer; font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 12px;
+            cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
         button:active { opacity: 0.85; }
-        
-        .btn-green {
-            background: #27ae60;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
-        }
-        .btn-white {
-            background: #ffffff;
-            color: #16222f;
-            border: 2px solid #ffffff;
-            box-shadow: 0 4px 15px rgba(255,255,255,0.3);
-        }
-        .btn-red {
-            background: #c0392b;
-            color: #ffffff;
-            border: 2px solid #c0392b;
-            box-shadow: 0 4px 15px rgba(192,57,43,0.3);
-        }
+        .btn-green { background: #27ae60; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .btn-white { background: #ffffff; color: #16222f; border: 2px solid #ffffff; }
+        .btn-red { background: #c0392b; color: #ffffff; border: 2px solid #c0392b; }
 
         input[type="text"], input[type="number"] {
             padding: 12px; font-size: 16px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); text-align: center; width: 100%;
             box-sizing: border-box; background: rgba(0,0,0,0.5); color: #fff;
         }
+
+        /* --- ИГРОВОЙ СТОЛ (Дурак Онлайн Style) --- */
+        #game-table-screen {
+            display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--green-table);
+            background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: hidden; z-index: 20;
+            flex-direction: column; justify-content: space-between;
+            padding: 10px; box-sizing: border-box;
+        }
+
+        /* Верхняя панель стола (Информация о столе, козырь, колода) */
+        .table-top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 12px; font-size: 13px;
+        }
+
+        /* Зоны оппонентов по кругу */
+        .table-opponents {
+            position: relative; width: 100%; height: 90px;
+        }
+        .opponent-seat {
+            position: absolute; display: flex; flex-direction: column; align-items: center;
+            transition: all 0.3s ease;
+        }
+        .opp-avatar {
+            width: 50px; height: 50px; border-radius: 50%; background: #15222e;
+            border: 2px solid #2ecc71; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative;
+        }
+        .opp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .opp-name { font-size: 11px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 6px; margin-top: 3px; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .opp-cards-count {
+            position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white;
+            font-size: 10px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 1px solid #fff;
+        }
+
+        /* Центр стола (карты битвы) */
+        .table-center-felt {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; margin: 5px 0;
+        }
+        .battle-pairs-container {
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 90%;
+        }
+        .battle-pair {
+            position: relative; width: 55px; height: 75px;
+        }
+        .battle-card-attack {
+            position: absolute; top: 0; left: 0; z-index: 1;
+        }
+        .battle-card-defend {
+            position: absolute; top: 12px; left: 12px; z-index: 2;
+        }
+
+        /* Колода и козырь в центре */
+        .deck-zone {
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .deck-stack {
+            width: 45px; height: 65px; background: #2c3e50; border: 2px solid #fff; border-radius: 6px;
+            position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        .trump-card-view {
+            position: absolute; left: 20px; top: 0; transform: rotate(90deg); z-index: 0;
+        }
+
+        /* Индикатор хода / статус */
+        .game-status-banner {
+            background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 10px;
+            font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 5px;
+            display: inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        /* Панель кнопок управления игрой */
+        .game-actions-bar {
+            display: flex; gap: 10px; justify-content: center; margin-bottom: 8px;
+        }
+
+        /* Рука игрока внизу */
+        .player-hand-area {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 90px; padding: 5px; overflow-x: auto; gap: -20px; position: relative;
+        }
+
+        /* Стили игральной карты (CSS Engine) */
+        .playing-card {
+            width: 55px; height: 78px; background: #ffffff; border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); display: flex; flex-direction: column;
+            justify-content: space-between; padding: 4px; box-sizing: border-box;
+            font-weight: bold; font-size: 13px; cursor: pointer; transition: transform 0.2s, margin 0.2s;
+            position: relative; flex-shrink: 0; border: 1px solid #ccc;
+        }
+        .playing-card:hover { transform: translateY(-10px); z-index: 10; }
+        .playing-card.selected { transform: translateY(-15px); border: 2px solid #2ecc71; z-index: 10; }
+        
+        .card-red { color: #e74c3c; }
+        .card-black { color: #2c3e50; }
+        
+        .card-top-left { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+        .card-center-suit { font-size: 20px; align-self: center; justify-self: center; margin: auto; }
+        .card-bottom-right { display: flex; flex-direction: column; align-items: center; line-height: 1; transform: rotate(180deg); }
+
+        /* Рубашка карты */
+        .card-back {
+            width: 55px; height: 78px; background: #1a2733; border: 2px solid #ffffff;
+            border-radius: 6px; background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+            background-size: 8px 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Верхняя панель -->
-    <div class="top-bar">
-        <div class="top-user-info" onclick="openMyProfile()">
-            <div class="avatar-top" id="avatar-top-box">👤</div>
-            <div style="text-align: left; line-height: 1.2;">
-                <div id="top-username" style="font-weight: bold; font-size: 14px; color: #fff;">Игрок</div>
-                <div style="font-size: 11px; color: #bdc3c7;">Новичок</div>
+    <!-- Главное меню -->
+    <div id="menu-screen" class="menu-container">
+        <div class="top-bar">
+            <div class="top-user-info" onclick="openMyProfile()">
+                <div class="avatar-top" id="avatar-top-box">👤</div>
+                <div style="text-align: left; line-height: 1.2;">
+                    <div id="top-username" style="font-weight: bold; font-size: 14px; color: #fff;">Игрок</div>
+                    <div style="font-size: 11px; color: #bdc3c7;">Новичок</div>
+                </div>
+            </div>
+            <div class="top-currencies">
+                <div class="currency-item" onclick="openBalanceModal()" title="Фишки">
+                    <span>🪙</span> <span id="chips-val">0</span>
+                </div>
+                <div id="bell-btn" style="position:relative; cursor:pointer; font-size:22px; padding: 0 5px;" title="Уведомления">
+                    🔔
+                    <div class="bell-badge" id="bell-badge" style="position:absolute; top:-3px; right:0; background:#e74c3c; color:white; font-size:10px; width:16px; height:16px; border-radius:50%; display:none; align-items:center; justify-content:center;">0</div>
+                </div>
             </div>
         </div>
-        <div class="top-currencies">
-            <div class="currency-item" onclick="openBalanceModal()" title="Фишки">
-                <span>🪙</span> <span id="chips-val">0</span>
+
+        <div class="menu-wrapper">
+            <div class="menu-list" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="menu-row" onclick="openFriendsListModal()">
+                    <div class="menu-row-left"><span>👥</span> Друзья</div>
+                    <div class="menu-row-right">❯</div>
+                </div>
+                <div class="menu-row" onclick="document.getElementById('stats-modal').style.display='flex'">
+                    <div class="menu-row-left"><span>🏆</span> Победы</div>
+                    <div class="menu-row-right">❯</div>
+                </div>
+                <div class="menu-row" onclick="document.getElementById('settings-modal').style.display='flex'">
+                    <div class="menu-row-left"><span>⚙️</span> Настройки</div>
+                    <div class="menu-row-right">❯</div>
+                </div>
             </div>
-            <div id="bell-btn" style="position:relative; cursor:pointer; font-size:22px; padding: 0 5px;" title="Уведомления">
-                🔔
-                <div class="bell-badge" id="bell-badge" style="position:absolute; top:-3px; right:0; background:#e74c3c; color:white; font-size:10px; width:16px; height:16px; border-radius:50%; display:none; align-items:center; justify-content:center;">0</div>
+        </div>
+
+        <div class="room-action-box">
+            <button class="btn-green" onclick="document.getElementById('game-select-modal').style.display='flex'" style="width: 100%; padding: 14px; font-size: 16px; margin-bottom: 12px;">Создать игру</button>
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="room-code-input" placeholder="Код стола" maxlength="4">
+                <button class="btn-green" onclick="joinRoomByCode()" style="padding: 12px 20px;">Войти</button>
             </div>
         </div>
     </div>
 
-    <!-- Профиль -->
+    <!-- Модальные окна -->
     <div id="profile-modal" class="modal-overlay">
         <div class="modal-card">
-            <button class="modal-close" id="close-profile">✕</button>
+            <button class="modal-close" onclick="document.getElementById('profile-modal').style.display='none'">✕</button>
             <div class="avatar-large" id="modal-avatar">👤</div>
             <h3 id="modal-profile-name" style="margin: 5px 0 0 0; font-size: 18px; color: #2ecc71;">Игрок</h3>
             <div id="modal-profile-username" style="font-size: 12px; color: #bdc3c7; margin-bottom: 2px;">@username</div>
@@ -267,29 +333,21 @@
                 <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Дурак: <span style="color:#fff;">0</span></div>
                 <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Покер: <span style="color:#fff;">0</span></div>
                 <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Сундучок: <span style="color:#fff;">0</span></div>
-                
-                <div style="color: #f1c40f; font-weight: bold; margin-top: 8px; margin-bottom: 4px;">👥 Друзья (<span id="friends-count">0</span>):</div>
-                <div class="friends-box" id="friends-list-container">
-                    <div style="color:#888; text-align:center;">Список пуст</div>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- Настройки (Версия 3.9.0) -->
     <div id="settings-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
             <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; margin-top: 15px; text-align: center;">
-                <p style="color:#ccc; font-size:14px; margin:0 0 10px 0;">Текущая версия приложения:</p>
-                <div style="font-size: 20px; font-weight: bold; color: #2ecc71;">Версия 3.9.0</div>
-                <p style="color:#888; font-size:12px; margin-top:10px;">Интерфейс стабилизирован.</p>
+                <p style="color:#ccc; font-size:14px; margin:0 0 10px 0;">Текущая версия:</p>
+                <div style="font-size: 20px; font-weight: bold; color: #2ecc71;">Версия 4.0.0 (Full Game)</div>
             </div>
         </div>
     </div>
 
-    <!-- Выбор игры -->
     <div id="game-select-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('game-select-modal').style.display='none'">✕</button>
@@ -297,12 +355,10 @@
             <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
                 <button class="btn-green" onclick="openDurakSettings()" style="padding:14px; font-size:16px;">🃏 Дурак Онлайн</button>
                 <button style="background:#2980b9; padding:14px; font-size:16px;" onclick="alert('Покер в разработке')">🎲 Покер</button>
-                <button style="background:#8e44ad; padding:14px; font-size:16px;" onclick="alert('Сундучок в разработке')">📦 Сундучок</button>
             </div>
         </div>
     </div>
 
-    <!-- Настройки Дурака (Лимит игроков до 9) -->
     <div id="durak-settings-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('durak-settings-modal').style.display='none'">✕</button>
@@ -316,8 +372,7 @@
             <div class="game-param-group">
                 <div class="game-param-title">Количество игроков: <span id="players-count-val" style="color:#2ecc71; font-weight:bold;">2</span></div>
                 <div class="range-slider-container">
-                    <!-- Лимит игроков изменен до 9 -->
-                    <input type="range" id="players-range" min="2" max="9" value="2" oninput="updatePlayersCount(this.value)">
+                    <input type="range" id="players-range" min="2" max="6" value="2" oninput="updatePlayersCount(this.value)">
                 </div>
             </div>
 
@@ -342,185 +397,442 @@
         </div>
     </div>
 
-    <!-- Друзья, Статистика, Баланс -->
-    <div id="friends-only-modal" class="modal-overlay">
-        <div class="modal-card">
-            <button class="modal-close" onclick="document.getElementById('friends-only-modal').style.display='none'">✕</button>
-            <h3 style="color:#f1c40f; margin-top:0;">👥 Мои друзья</h3>
-            <div class="friends-box" id="friends-only-container" style="max-height: 220px;">
-                <div style="color:#888; text-align:center;">Список пуст</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="stats-modal" class="modal-overlay">
-        <div class="modal-card">
-            <button class="modal-close" onclick="document.getElementById('stats-modal').style.display='none'">✕</button>
-            <h3 style="color:#f1c40f; margin-top:0;">🏆 Статистика побед</h3>
-            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 12px; padding: 12px; text-align: left; font-size: 14px;">
-                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Дурак: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
-                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Покер: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
-                <div style="display:flex; justify-content:space-between; margin:6px 0; color:#ccc;">Сундучок: <span style="color:#fff; font-weight:bold;">0 побед</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="balance-modal" class="modal-overlay">
-        <div class="modal-card">
-            <button class="modal-close" onclick="document.getElementById('balance-modal').style.display='none'">✕</button>
-            <h3 style="color:#f1c40f; margin-top:0;">🪙 Фишки</h3>
-            <p style="font-size:14px; color:#ccc; margin: 10px 0;">Ваш текущий баланс:</p>
-            <div style="font-size: 28px; font-weight: bold; color: #2ecc71; margin-bottom: 15px;">0 фишек</div>
-            <p style="color:#888; font-size:12px; margin-top:10px;">Ежедневный бонус будет доступен позже.</p>
-        </div>
-    </div>
-
-    <!-- Главное меню -->
-    <div id="menu-screen" class="menu-wrapper">
-        <div class="menu-list">
-            <div class="menu-row" onclick="openFriendsListModal()">
-                <div class="menu-row-left"><span>👥</span> Друзья</div>
-                <div class="menu-row-right">❯</div>
-            </div>
-            <div class="menu-row" onclick="document.getElementById('stats-modal').style.display='flex'">
-                <div class="menu-row-left"><span>🏆</span> Победы</div>
-                <div class="menu-row-right">❯</div>
-            </div>
-            <div class="menu-row" onclick="document.getElementById('settings-modal').style.display='flex'">
-                <div class="menu-row-left"><span>⚙️</span> Настройки</div>
-                <div class="menu-row-right">❯</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Кнопки внизу -->
-    <div id="menu-bottom-actions" class="room-action-box">
-        <button class="btn-green" onclick="document.getElementById('game-select-modal').style.display='flex'" style="width: 100%; padding: 14px; font-size: 16px; margin-bottom: 12px;">Создать игру</button>
-        <div style="display:flex; gap:8px;">
-            <input type="text" id="room-code-input" placeholder="Код стола" maxlength="4">
-            <button class="btn-green" style="padding: 12px 20px;">Войти</button>
-        </div>
-    </div>
-
-    <!-- Игровое лобби (Стол) -->
-    <div id="lobby-screen" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; padding:10px; box-sizing:border-box; gap:15px;">
-        <div style="background: var(--green-felt); border: 5px solid #0d3811; border-radius: 20px; padding: 20px; margin: 0 auto; max-width: 420px; width: 92%; box-shadow: 0 10px 30px rgba(0,0,0,0.7);">
-            <div id="room-header-text" style="font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Стол: Код 0000</div>
-            <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 15px; text-shadow: 0 1px 3px rgba(0,0,0,0.4);">Ставка: 100 | Колода: 36 | Игроков: 2</div>
+    <!-- Лобби ожидания стола -->
+    <div id="lobby-screen" class="modal-overlay">
+        <div class="modal-card" style="background: var(--green-table); border: 5px solid #0d3811;">
+            <button class="modal-close" onclick="leaveRoom()">✕</button>
+            <div id="room-header-text" style="font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px;">Стол: Код 0000</div>
+            <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 15px;">Ставка: 100 | Колода: 36 | Игроков: 2</div>
             
-            <!-- Динамические слоты для игроков (поддерживает до 9 человек) -->
-            <div style="display: flex; justify-content: center; gap: 12px; margin: 15px 0 10px 0; flex-wrap: wrap;" id="players-slots-container">
-                <!-- Слоты будут генерироваться автоматически через JS в зависимости от выбранного числа игроков -->
+            <div style="display: flex; justify-content: center; gap: 12px; margin: 15px 0; flex-wrap: wrap;" id="lobby-slots-container"></div>
+
+            <div style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+                <button class="btn-white" id="start-game-btn" onclick="startGameNow()" style="width: 100%; padding: 14px; display:none;">Начать игру</button>
+                <button class="btn-red" onclick="leaveRoom()" style="width: 100%; padding: 12px;">Выйти</button>
             </div>
         </div>
+    </div>
 
-        <div style="width:100%; max-width:340px; display:flex; flex-direction:column; gap:10px;">
-            <button class="btn-white" id="start-btn" style="width: 100%; padding: 14px;">Готов! (1/2)</button>
-            <button class="btn-red" onclick="leaveRoom()" style="width: 100%; padding: 12px;">Выйти в меню</button>
+    <!-- --- ИГРОВОЙ СТОЛ (ДУРАК) --- -->
+    <div id="game-table-screen">
+        <div class="table-top-bar">
+            <div id="table-room-code">Стол #0000</div>
+            <div id="trump-info" style="color: #ffeb3b; font-weight: bold;">Козырь: 🂡</div>
+            <button onclick="leaveRoom()" style="padding: 4px 10px; font-size: 11px; background: #c0392b;">Выйти</button>
         </div>
+
+        <!-- Оппоненты по кругу стола -->
+        <div class="table-opponents" id="table-opponents-container"></div>
+
+        <!-- Центр стола: Колода, козырь и карты на столе -->
+        <div class="table-center-felt">
+            <div class="deck-zone" id="deck-zone">
+                <div class="deck-stack" id="deck-stack-el"></div>
+                <div id="trump-card-slot"></div>
+                <div id="deck-count-badge" style="font-size: 12px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 8px;">36 карт</div>
+            </div>
+
+            <div class="game-status-banner" id="game-status-text">Ожидание хода...</div>
+
+            <div class="battle-pairs-container" id="battle-pairs-area"></div>
+        </div>
+
+        <!-- Кнопки действий во время игры (Бито / Взято) -->
+        <div class="game-actions-bar" id="game-action-buttons">
+            <button class="btn-green" id="btn-bito" onclick="actionBito()" style="display:none;">Бито</button>
+            <button class="btn-red" id="btn-take" onclick="actionTake()" style="display:none;">Взято</button>
+        </div>
+
+        <!-- Рука игрока внизу -->
+        <div class="player-hand-area" id="player-hand-container"></div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            let myName = "Игрок_" + Math.floor(Math.random() * 900 + 100);
-            let myUsername = "@player";
-            let photoUrl = null;
+        const DATABASE_URL = "https://cardgame-adee9-default-rtdb.europe-west1.firebasedatabase.app";
+        
+        let myName = "Игрок_" + Math.floor(Math.random() * 900 + 100);
+        let myUsername = "@player";
+        let photoUrl = null;
+
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.expand();
+                const user = tg.initDataUnsafe?.user || tg.initData?.user;
+                if (user) {
+                    if (user.first_name) myName = user.first_name;
+                    if (user.username) myUsername = "@" + user.username;
+                    if (user.photo_url) photoUrl = user.photo_url;
+                }
+            }
+        } catch (e) {}
+
+        document.getElementById('top-username').innerText = myName;
+        if (photoUrl) {
+            document.getElementById('avatar-top-box').innerHTML = `<img src="${photoUrl}" alt="avatar">`;
+        }
+
+        let durakSettings = { bet: 100, players: 2, deck: '36', type: 'podkidnoy' };
+        let currentRoomCode = null;
+        let isHost = false;
+        let gamePollTimer = null;
+        let selectedCards = [];
+
+        window.updatePlayersCount = function(val) {
+            durakSettings.players = parseInt(val);
+            document.getElementById('players-count-val').innerText = val;
+        };
+
+        window.setParam = function(element, category, value) {
+            durakSettings[category] = value;
+            element.parentNode.querySelectorAll('.param-btn').forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+        };
+
+        window.openDurakSettings = function() {
+            document.getElementById('game-select-modal').style.display = 'none';
+            document.getElementById('durak-settings-modal').style.display = 'flex';
+        };
+
+        window.openFriendsListModal = function() { document.getElementById('friends-only-modal').style.display = 'flex'; };
+        window.openBalanceModal = function() { document.getElementById('balance-modal').style.display = 'flex'; };
+
+        // Генерация колоды карт
+        function generateDeck(deckSize) {
+            const suits = ['♠', '♣', '♦', '♥'];
+            let ranks = [];
+            if (deckSize === '24') ranks = ['9', '10', 'J', 'Q', 'K', 'A'];
+            else if (deckSize === '36') ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            else ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+            let deck = [];
+            for (let s of suits) {
+                for (let r of ranks) {
+                    deck.push({ rank: r, suit: s, id: r + s });
+                }
+            }
+            // Перемешивание Fisher-Yates
+            for (let i = deck.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+            return deck;
+        }
+
+        // Рендер HTML карты
+        function renderCardHTML(card, isSmall = false) {
+            if (!card) return '<div class="card-back"></div>';
+            const isRed = card.suit === '♦' || card.suit === '♥';
+            const colorClass = isRed ? 'card-red' : 'card-black';
+            const width = isSmall ? '45px' : '55px';
+            const height = isSmall ? '65px' : '78px';
+            const fontSize = isSmall ? '11px' : '13px';
+
+            return `
+                <div class="playing-card ${colorClass}" style="width:${width}; height:${height}; font-size:${fontSize};" data-cardid="${card.id}">
+                    <div class="card-top-left"><span>${card.rank}</span><span>${card.suit}</span></div>
+                    <div class="card-center-suit">${card.suit}</div>
+                    <div class="card-bottom-right"><span>${card.rank}</span><span>${card.suit}</span></div>
+                </div>
+            `;
+        }
+
+        // Создание комнаты
+        window.createDurakRoom = async function() {
+            durakSettings.bet = document.getElementById('durak-bet').value || 100;
+            document.getElementById('durak-settings-modal').style.display = 'none';
+            
+            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+            currentRoomCode = randomCode;
+            isHost = true;
+
+            const roomData = {
+                code: randomCode,
+                host: myName,
+                hostPhoto: photoUrl,
+                settings: durakSettings,
+                status: 'lobby',
+                players: { [myName]: { name: myName, photo: photoUrl, cards: [], role: 'host' } },
+                game: null
+            };
 
             try {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    const tg = window.Telegram.WebApp;
-                    tg.expand();
-                    const user = tg.initDataUnsafe?.user || tg.initData?.user;
-                    if (user) {
-                        if (user.first_name) myName = user.first_name;
-                        if (user.username) myUsername = "@" + user.username;
-                        if (user.photo_url) photoUrl = user.photo_url;
-                    }
-                }
-            } catch (e) {}
+                await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData)
+                });
+                openLobbyUI(roomData);
+                startRoomPolling(randomCode);
+            } catch(e) { alert("Ошибка создания стола!"); }
+        };
 
-            document.getElementById('top-username').innerText = myName;
-            if (photoUrl) {
-                document.getElementById('avatar-top-box').innerHTML = `<img src="${photoUrl}" alt="avatar">`;
+        window.joinRoomByCode = async function() {
+            const code = document.getElementById('room-code-input').value.trim();
+            if (code.length !== 4) { alert("Введите 4 цифры кода!"); return; }
+            currentRoomCode = code;
+            isHost = false;
+
+            try {
+                const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
+                const roomData = await res.json();
+                if (!roomData) { alert("Стол не найден!"); return; }
+
+                if (Object.keys(roomData.players || {}).length >= roomData.settings.players) {
+                    alert("Стол полон!"); return;
+                }
+
+                roomData.players[myName] = { name: myName, photo: photoUrl, cards: [], role: 'guest' };
+                await fetch(`${DATABASE_URL}/rooms/${code}/players.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData.players)
+                });
+
+                openLobbyUI(roomData);
+                startRoomPolling(code);
+            } catch(e) { alert("Ошибка подключения."); }
+        };
+
+        function openLobbyUI(roomData) {
+            document.getElementById('room-header-text').innerText = `Стол: Код ${roomData.code}`;
+            document.getElementById('room-params-info').innerText = `Ставка: ${roomData.settings.bet} | Колода: ${roomData.settings.deck} | Игроков: ${Object.keys(roomData.players).length}/${roomData.settings.players}`;
+            
+            const container = document.getElementById('lobby-slots-container');
+            container.innerHTML = '';
+            
+            let playersArr = Object.values(roomData.players);
+            for (let i = 0; i < roomData.settings.players; i++) {
+                let p = playersArr[i];
+                if (p) {
+                    container.innerHTML += `
+                        <div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px solid #2ecc71; display: flex; align-items: center; justify-content: center; position: relative;">
+                            ${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : '👤'}
+                            ${i === 0 ? '<div style="position: absolute; top: -9px; right: -5px; font-size: 12px; background: #ffeb3b; color: #000; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">👑</div>' : ''}
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML += `<div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 22px;">+</div>`;
+                }
             }
 
-            let durakSettings = { bet: 100, players: 2, deck: '36', type: 'podkidnoy' };
+            if (isHost && playersArr.length >= 1) {
+                document.getElementById('start-game-btn').style.display = 'block';
+            }
 
-            window.updatePlayersCount = function(val) {
-                durakSettings.players = parseInt(val);
-                document.getElementById('players-count-val').innerText = val;
-            };
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('lobby-screen').style.display = 'flex';
+        }
 
-            window.setParam = function(element, category, value) {
-                durakSettings[category] = value;
-                element.parentNode.querySelectorAll('.param-btn').forEach(btn => btn.classList.remove('selected'));
-                element.classList.add('selected');
-            };
+        function startRoomPolling(code) {
+            if (gamePollTimer) clearInterval(gamePollTimer);
+            gamePollTimer = setInterval(async () => {
+                try {
+                    const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
+                    const d = await res.json();
+                    if (!d) { leaveRoom(); return; }
 
-            window.openDurakSettings = function() {
-                document.getElementById('game-select-modal').style.display = 'none';
-                document.getElementById('durak-settings-modal').style.display = 'flex';
-            };
-
-            window.createDurakRoom = function() {
-                durakSettings.bet = document.getElementById('durak-bet').value || 100;
-                document.getElementById('durak-settings-modal').style.display = 'none';
-                
-                const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-                document.getElementById('room-header-text').innerText = `Стол: Код ${randomCode}`;
-                document.getElementById('room-params-info').innerText = `Ставка: ${durakSettings.bet} | Колода: ${durakSettings.deck} | Игроков: ${durakSettings.players} | ${durakSettings.type === 'podkidnoy' ? 'Подкидной' : 'Переводной'}`;
-                
-                // Рендерим слоты игроков в зависимости от выбранного количества (до 9)
-                const container = document.getElementById('players-slots-container');
-                container.innerHTML = '';
-                
-                for (let i = 0; i < durakSettings.players; i++) {
-                    if (i === 0) {
-                        // Хозяин стола
-                        container.innerHTML += `
-                            <div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px solid #2ecc71; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                                <span id="slot-0-avatar">${photoUrl ? `<img src="${photoUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : '👤'}</span>
-                                <div style="position: absolute; top: -9px; right: -5px; font-size: 12px; background: #ffeb3b; color: #000; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid #fff;">👑</div>
-                            </div>
-                        `;
+                    if (d.status === 'playing') {
+                        document.getElementById('lobby-screen').style.display = 'none';
+                        document.getElementById('game-table-screen').style.display = 'flex';
+                        renderGameTable(d);
                     } else {
-                        // Пустые слоты для остальных игроков
-                        container.innerHTML += `
-                            <div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 22px;">
-                                +
-                            </div>
-                        `;
+                        openLobbyUI(d);
                     }
+                } catch(e) {}
+            }, 1500);
+        }
+
+        // Начало игры (Хост запускает)
+        window.startGameNow = async function() {
+            try {
+                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+                const room = await res.json();
+                
+                const deck = generateDeck(room.settings.deck);
+                const trump = deck[deck.length - 1]; // Последняя карта — козырь
+
+                let playersKeys = Object.keys(room.players);
+                for (let pKey of playersKeys) {
+                    room.players[pKey].cards = deck.splice(0, 6);
                 }
 
-                document.getElementById('menu-screen').style.display = 'none';
-                document.getElementById('menu-bottom-actions').style.display = 'none';
-                document.getElementById('lobby-screen').style.display = 'flex';
-            };
+                room.status = 'playing';
+                room.game = {
+                    deck: deck,
+                    trump: trump,
+                    attacker: playersKeys[0],
+                    defender: playersKeys[1] || playersKeys[0],
+                    tablePairs: [], // Массив пар {attack: card, defend: card}
+                    statusText: `Ходит ${room.players[playersKeys[0]].name}`
+                };
 
-            window.leaveRoom = function() {
-                document.getElementById('lobby-screen').style.display = 'none';
-                document.getElementById('menu-screen').style.display = 'flex';
-                document.getElementById('menu-bottom-actions').style.display = 'block';
-            };
+                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                });
+            } catch(e) { alert("Не удалось начать игру"); }
+        };
 
-            window.openMyProfile = function() {
-                document.getElementById('modal-profile-name').innerText = myName;
-                document.getElementById('modal-profile-username').innerText = myUsername;
-                if (photoUrl) document.getElementById('modal-avatar').innerHTML = `<img src="${photoUrl}">`;
-                document.getElementById('profile-modal').style.display = 'flex';
-            };
+        // Рендеринг игрового стола
+        function renderGameTable(room) {
+            document.getElementById('table-room-code').innerText = `Стол #${room.code}`;
+            document.getElementById('trump-info').innerText = `Козырь: ${room.game.trump.rank}${room.game.trump.suit}`;
+            document.getElementById('deck-count-badge').innerText = `${room.game.deck.length} карт`;
 
-            window.openBalanceModal = function() {
-                document.getElementById('balance-modal').style.display = 'flex';
-            };
+            // Рендерим оппонентов
+            const oppContainer = document.getElementById('table-opponents-container');
+            oppContainer.innerHTML = '';
+            let pKeys = Object.keys(room.players);
+            let myIdx = pKeys.indexOf(myName);
+            
+            // Расположение оппонентов по кругу
+            let others = pKeys.filter(k => k !== myName);
+            others.forEach((key, idx) => {
+                let p = room.players[key];
+                let leftPercent = 20 + (idx * 60) / Math.max(1, others.length);
+                oppContainer.innerHTML += `
+                    <div class="opponent-seat" style="left: ${leftPercent}%; top: 10px;">
+                        <div class="opp-avatar">
+                            ${p.photo ? `<img src="${p.photo}">` : '👤'}
+                            <div class="opp-cards-count">${p.cards ? p.cards.length : 0}</div>
+                        </div>
+                        <div class="opp-name">${p.name}</div>
+                    </div>
+                `;
+            });
 
-            window.openFriendsListModal = function() {
-                document.getElementById('friends-only-modal').style.display = 'flex';
-            };
+            // Колода и козырь
+            const deckStackEl = document.getElementById('deck-stack-el');
+            const trumpSlot = document.getElementById('trump-card-slot');
+            if (room.game.deck.length > 0) {
+                deckStackEl.style.display = 'block';
+                trumpSlot.innerHTML = `<div style="position:absolute; left:25px; top:0; transform:rotate(90deg);">${renderCardHTML(room.game.trump, true)}</div>`;
+            } else {
+                deckStackEl.style.display = 'none';
+                trumpSlot.innerHTML = `<div style="font-size:11px; color:#ffeb3b;">Козырь: ${room.game.trump.suit}</div>`;
+            }
 
-            document.getElementById('close-profile').addEventListener('click', () => document.getElementById('profile-modal').style.display = 'none');
-        });
+            // Карты на столе (атака / защита)
+            const battleArea = document.getElementById('battle-pairs-area');
+            battleArea.innerHTML = '';
+            (room.game.tablePairs || []).forEach(pair => {
+                battleArea.innerHTML += `
+                    <div class="battle-pair">
+                        <div class="battle-card-attack">${renderCardHTML(pair.attack, true)}</div>
+                        <div class="battle-card-defend">${pair.defend ? renderCardHTML(pair.defend, true) : ''}</div>
+                    </div>
+                `;
+            });
+
+            // Моя рука
+            const handContainer = document.getElementById('player-hand-container');
+            handContainer.innerHTML = '';
+            let myData = room.players[myName];
+            if (myData && myData.cards) {
+                myData.cards.forEach(card => {
+                    let cardEl = document.createElement('div');
+                    cardEl.innerHTML = renderCardHTML(card);
+                    cardEl.firstChild.onclick = () => onCardClick(card, cardEl.firstChild);
+                    handContainer.appendChild(cardEl.firstChild);
+                });
+            }
+
+            // Статус и кнопки
+            document.getElementById('game-status-text').innerText = room.game.statusText;
+            let isMyTurn = (room.game.attacker === myName || room.game.defender === myName);
+            
+            document.getElementById('btn-bito').style.display = (room.game.attacker === myName && room.game.tablePairs.length > 0) ? 'inline-block' : 'none';
+            document.getElementById('btn-take').style.display = (room.game.defender === myName && room.game.tablePairs.length > 0) ? 'inline-block' : 'none';
+        }
+
+        // Клик по карте в руке
+        async function onCardClick(card, el) {
+            el.classList.toggle('selected');
+            if (selectedCards.find(c => c.id === card.id)) {
+                selectedCards = selectedCards.filter(c => c.id !== card.id);
+            } else {
+                selectedCards.push(card);
+            }
+
+            // Если карта выбрана, делаем ход в базу данных
+            if (selectedCards.length === 1) {
+                let chosen = selectedCards[0];
+                selectedCards = [];
+
+                try {
+                    const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+                    const room = await res.json();
+                    
+                    let myData = room.players[myName];
+                    myData.cards = myData.cards.filter(c => c.id !== chosen.id);
+
+                    // Если я атакующий
+                    if (room.game.attacker === myName) {
+                        room.game.tablePairs.push({ attack: chosen, defend: null });
+                        room.game.statusText = `Ожидание защиты...`;
+                        let pKeys = Object.keys(room.players);
+                        let nextDef = pKeys[(pKeys.indexOf(myName) + 1) % pKeys.length];
+                        room.game.defender = nextDef;
+                    } 
+                    // Если я защищающийся
+                    else if (room.game.defender === myName) {
+                        let unbeat = room.game.tablePairs.find(p => !p.defend);
+                        if (unbeat) {
+                            unbeat.defend = chosen;
+                            room.game.statusText = `Карта отбита!`;
+                        }
+                    }
+
+                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                    });
+                } catch(e) {}
+            }
+        }
+
+        async function actionBito() {
+            try {
+                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+                const room = await res.json();
+                room.game.tablePairs = [];
+                room.game.statusText = "Бито! Новый ход.";
+                
+                // Добираем карты до 6
+                let deck = room.game.deck || [];
+                for (let k of Object.keys(room.players)) {
+                    while (room.players[k].cards.length < 6 && deck.length > 0) {
+                        room.players[k].cards.push(deck.pop());
+                    }
+                }
+                room.game.deck = deck;
+
+                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                });
+            } catch(e) {}
+        }
+
+        async function actionTake() {
+            try {
+                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+                const room = await res.json();
+                
+                let myData = room.players[myName];
+                room.game.tablePairs.forEach(p => {
+                    myData.cards.push(p.attack);
+                    if (p.defend) myData.cards.push(p.defend);
+                });
+                room.game.tablePairs = [];
+                room.game.statusText = `${myName} взял карты!`;
+
+                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                });
+            } catch(e) {}
+        }
+
+        window.leaveRoom = function() {
+            if (gamePollTimer) clearInterval(gamePollTimer);
+            document.getElementById('game-table-screen').style.display = 'none';
+            document.getElementById('lobby-screen').style.display = 'none';
+            document.getElementById('menu-screen').style.display = 'flex';
+        };
     </script>
 </body>
 </html>
