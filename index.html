@@ -55,12 +55,12 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.6);
             z-index: 15;
         }
-        .top-user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .top-user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; pointer-events: auto; }
         .avatar-top {
             width: 40px; height: 40px; border-radius: 50%;
             background: #2481cc; border: 3px solid #ffeb3b;
             display: flex; align-items: center; justify-content: center;
-            overflow: hidden; flex-shrink: 0;
+            overflow: hidden; flex-shrink: 0; font-size: 18px;
         }
         .avatar-top img { width: 100%; height: 100%; object-fit: cover; }
         
@@ -92,7 +92,7 @@
             border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
             padding: 15px; max-width: 400px; margin: 0 auto 15px auto; width: 100%;
             box-sizing: border-box; box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-            z-index: 15;
+            z-index: 15; pointer-events: auto;
         }
 
         /* Модальные окна */
@@ -111,7 +111,7 @@
         }
         .avatar-large {
             width: 75px; height: 75px; border-radius: 50%; background: #2481cc; border: 4px solid #ffeb3b;
-            margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
+            margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 30px;
         }
         .avatar-large img { width: 100%; height: 100%; object-fit: cover; }
         
@@ -133,7 +133,7 @@
 
         button {
             color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 12px;
-            cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto;
         }
         button:active { opacity: 0.85; }
         .btn-green { background: #27ae60; border: 1px solid rgba(255, 255, 255, 0.2); }
@@ -144,10 +144,10 @@
         input[type="text"], input[type="number"] {
             padding: 12px; font-size: 16px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); text-align: center; width: 100%;
-            box-sizing: border-box; background: rgba(0,0,0,0.5); color: #fff;
+            box-sizing: border-box; background: rgba(0,0,0,0.5); color: #fff; pointer-events: auto;
         }
 
-        /* --- ЛОББИ СТОЛА (Зеленое сукно) --- */
+        /* --- ЛОББИ СТОЛА --- */
         #lobby-screen {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--green-table);
@@ -173,9 +173,7 @@
         }
 
         .table-opponents { position: relative; width: 100%; height: 75px; }
-        .opponent-seat {
-            position: absolute; display: flex; flex-direction: column; align-items: center;
-        }
+        .opponent-seat { position: absolute; display: flex; flex-direction: column; align-items: center; }
         .opp-avatar {
             width: 45px; height: 45px; border-radius: 50%; background: #15222e;
             border: 2px solid #2ecc71; display: flex; align-items: center; justify-content: center;
@@ -322,7 +320,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 7.0.0 (Auto-Refill 6 Cards)</div>
+            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 7.0.0 (Safe Profile & Clicks)</div>
         </div>
     </div>
 
@@ -416,21 +414,29 @@
         let myUsername = "@player";
         let photoUrl = null;
 
+        // Безопасная инициализация Telegram WebApp с обработкой ошибок
         try {
             if (window.Telegram && window.Telegram.WebApp) {
                 const tg = window.Telegram.WebApp;
                 tg.expand();
-                const user = tg.initDataUnsafe?.user || tg.initData?.user;
+                const user = tg.initDataUnsafe?.user;
                 if (user) {
                     if (user.first_name) myName = user.first_name;
                     if (user.username) myUsername = "@" + user.username;
                     if (user.photo_url) photoUrl = user.photo_url;
                 }
             }
-        } catch (e) {}
+        } catch (e) {
+            console.log("Telegram WebApp context not found, using default profile.");
+        }
 
+        // Рендер профиля в шапке
         document.getElementById('top-username').innerText = myName;
-        if (photoUrl) document.getElementById('avatar-top-box').innerHTML = `<img src="${photoUrl}">`;
+        if (photoUrl) {
+            document.getElementById('avatar-top-box').innerHTML = `<img src="${photoUrl}" alt="avatar">`;
+        } else {
+            document.getElementById('avatar-top-box').innerHTML = myName.charAt(0).toUpperCase();
+        }
 
         let durakSettings = { bet: 100, players: 2, deck: '36' };
         let currentRoomCode = null;
@@ -461,7 +467,11 @@
         window.openMyProfile = function() {
             document.getElementById('modal-profile-name').innerText = myName;
             document.getElementById('modal-profile-username').innerText = myUsername;
-            if (photoUrl) document.getElementById('modal-avatar').innerHTML = `<img src="${photoUrl}">`;
+            if (photoUrl) {
+                document.getElementById('modal-avatar').innerHTML = `<img src="${photoUrl}">`;
+            } else {
+                document.getElementById('modal-avatar').innerHTML = myName.charAt(0).toUpperCase();
+            }
             document.getElementById('profile-modal').style.display = 'flex';
         };
 
@@ -623,7 +633,7 @@
 
             let pKeys = Object.keys(room.players);
             for (let key of pKeys) {
-                room.players[key].cards = deck.splice(0, 6); // Ровно по 6 карт
+                room.players[key].cards = deck.splice(0, 6);
             }
 
             room.status = 'playing';
@@ -693,19 +703,6 @@
             document.getElementById('btn-take').style.display = (room.game.defender === myName && room.game.tablePairs.length > 0) ? 'inline-block' : 'none';
         }
 
-        // Автоматический добор карт до 6 штук из колоды
-        async function refillCards(room) {
-            let deck = room.game.deck || [];
-            let pKeys = Object.keys(room.players);
-            
-            for (let k of pKeys) {
-                while (room.players[k].cards.length < 6 && deck.length > 0) {
-                    room.players[k].cards.push(deck.pop());
-                }
-            }
-            room.game.deck = deck;
-        }
-
         async function onCardClick(card, el) {
             el.classList.toggle('selected');
             if (selectedCards.find(c => c.id === card.id)) {
@@ -722,3 +719,67 @@
                 let room = await res.json();
                 
                 let myData = room.players[myName];
+                myData.cards = myData.cards.filter(c => c.id !== chosen.id);
+
+                if (room.game.attacker === myName) {
+                    room.game.tablePairs.push({ attack: chosen, defend: null });
+                    room.game.statusText = `Ожидание ответа...`;
+                } else if (room.game.defender === myName) {
+                    let unbeat = room.game.tablePairs.find(p => !p.defend);
+                    if (unbeat) {
+                        unbeat.defend = chosen;
+                        room.game.statusText = `Отбито!`;
+                    }
+                }
+
+                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                });
+            }
+        }
+
+        async function actionBito() {
+            const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+            let room = await res.json();
+            room.game.tablePairs = [];
+            room.game.statusText = "Бито! Раздача карт...";
+            
+            let deck = room.game.deck || [];
+            for (let k of Object.keys(room.players)) {
+                while (room.players[k].cards.length < 6 && deck.length > 0) {
+                    room.players[k].cards.push(deck.pop());
+                }
+            }
+            room.game.deck = deck;
+
+            await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+            });
+        }
+
+        async function actionTake() {
+            const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+            let room = await res.json();
+            
+            let myData = room.players[myName];
+            room.game.tablePairs.forEach(p => {
+                myData.cards.push(p.attack);
+                if (p.defend) myData.cards.push(p.defend);
+            });
+            room.game.tablePairs = [];
+            room.game.statusText = `${myName} взял карты!`;
+
+            await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+            });
+        }
+
+        window.leaveRoom = function() {
+            if (gamePollTimer) clearInterval(gamePollTimer);
+            document.getElementById('game-table-screen').style.display = 'none';
+            document.getElementById('lobby-screen').style.display = 'none';
+            document.getElementById('menu-screen').style.display = 'flex';
+        };
+    </script>
+</body>
+</html>
