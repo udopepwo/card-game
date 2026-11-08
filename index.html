@@ -24,7 +24,7 @@
             user-select: none;
         }
 
-        /* Главное меню и модалки */
+        /* Главное меню */
         .menu-container {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(rgba(11, 17, 23, 0.9), rgba(11, 17, 23, 0.95)), 
@@ -39,6 +39,7 @@
             overflow-y: auto;
         }
 
+        /* Безопасный отступ сверху для шапки, чтобы не перекрывать челку Telegram */
         .top-bar {
             background-color: var(--blue-leather);
             background-image: var(--blue-pattern);
@@ -46,7 +47,7 @@
             border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 18px;
             max-width: 400px;
-            margin: 10px auto 0 auto;
+            margin: 55px auto 0 auto; /* Сдвинуто ниже крестика телеграма */
             width: 100%;
             padding: 10px 16px;
             display: flex;
@@ -90,7 +91,7 @@
             background-color: var(--blue-leather);
             background-image: var(--blue-pattern); background-size: 16px 16px;
             border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
-            padding: 15px; max-width: 400px; margin: 0 auto 10px auto; width: 100%;
+            padding: 15px; max-width: 400px; margin: 0 auto 15px auto; width: 100%;
             box-sizing: border-box; box-shadow: 0 6px 18px rgba(0,0,0,0.5);
         }
 
@@ -114,17 +115,6 @@
         }
         .avatar-large img { width: 100%; height: 100%; object-fit: cover; }
         
-        .friends-box {
-            margin-top: 10px; text-align: left; font-size: 13px;
-            background: rgba(0,0,0,0.4); padding: 8px; border-radius: 12px; max-height: 150px; overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .friend-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.06);
-            cursor: pointer;
-        }
-        .friend-item:hover { color: #2ecc71; }
-
         .game-param-group { text-align: left; margin: 14px 0; font-size: 14px; }
         .game-param-title { color: #f1c40f; font-weight: bold; margin-bottom: 6px; }
         .param-options { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -149,6 +139,7 @@
         .btn-green { background: #27ae60; border: 1px solid rgba(255, 255, 255, 0.2); }
         .btn-white { background: #ffffff; color: #16222f; border: 2px solid #ffffff; }
         .btn-red { background: #c0392b; color: #ffffff; border: 2px solid #c0392b; }
+        .btn-disabled { background: #7f8c8d !important; opacity: 0.6; cursor: not-allowed; }
 
         input[type="text"], input[type="number"] {
             padding: 12px; font-size: 16px; border-radius: 12px;
@@ -156,117 +147,90 @@
             box-sizing: border-box; background: rgba(0,0,0,0.5); color: #fff;
         }
 
-        /* --- ИГРОВОЙ СТОЛ (Дурак Онлайн Style) --- */
+        /* --- ИГРОВОЙ СТОЛ --- */
         #game-table-screen {
             display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--green-table);
             background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
-            overflow: hidden; z-index: 20;
-            flex-direction: column; justify-content: space-between;
+            z-index: 20; flex-direction: column; justify-content: space-between;
             padding: 10px; box-sizing: border-box;
         }
 
-        /* Верхняя панель стола (Информация о столе, козырь, колода) */
         .table-top-bar {
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 12px; font-size: 13px;
+            background: rgba(0,0,0,0.4); padding: 8px 14px; border-radius: 12px; font-size: 13px;
+            margin-top: 50px; /* Ниже телеграм-кнопок */
         }
 
-        /* Зоны оппонентов по кругу */
-        .table-opponents {
-            position: relative; width: 100%; height: 90px;
-        }
+        .table-opponents { position: relative; width: 100%; height: 75px; }
         .opponent-seat {
             position: absolute; display: flex; flex-direction: column; align-items: center;
-            transition: all 0.3s ease;
         }
         .opp-avatar {
-            width: 50px; height: 50px; border-radius: 50%; background: #15222e;
+            width: 45px; height: 45px; border-radius: 50%; background: #15222e;
             border: 2px solid #2ecc71; display: flex; align-items: center; justify-content: center;
-            overflow: hidden; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative;
+            overflow: hidden; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative;
         }
         .opp-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .opp-name { font-size: 11px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 6px; margin-top: 3px; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .opp-name { font-size: 10px; background: rgba(0,0,0,0.6); padding: 2px 5px; border-radius: 5px; margin-top: 2px; max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .opp-cards-count {
-            position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white;
-            font-size: 10px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%;
+            position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white;
+            font-size: 9px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; border: 1px solid #fff;
         }
 
-        /* Центр стола (карты битвы) */
         .table-center-felt {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             position: relative; margin: 5px 0;
         }
         .battle-pairs-container {
-            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 90%;
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 95%;
         }
-        .battle-pair {
-            position: relative; width: 55px; height: 75px;
-        }
-        .battle-card-attack {
-            position: absolute; top: 0; left: 0; z-index: 1;
-        }
-        .battle-card-defend {
-            position: absolute; top: 12px; left: 12px; z-index: 2;
-        }
+        .battle-pair { position: relative; width: 50px; height: 70px; }
+        .battle-card-attack { position: absolute; top: 0; left: 0; z-index: 1; }
+        .battle-card-defend { position: absolute; top: 10px; left: 10px; z-index: 2; }
 
-        /* Колода и козырь в центре */
         .deck-zone {
-            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-            display: flex; align-items: center; gap: 8px;
+            position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center; gap: 6px;
         }
         .deck-stack {
-            width: 45px; height: 65px; background: #2c3e50; border: 2px solid #fff; border-radius: 6px;
+            width: 42px; height: 60px; background: #1a2733; border: 2px solid #fff; border-radius: 6px;
             position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        }
-        .trump-card-view {
-            position: absolute; left: 20px; top: 0; transform: rotate(90deg); z-index: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 6px 6px;
         }
 
-        /* Индикатор хода / статус */
         .game-status-banner {
-            background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 10px;
-            font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 5px;
-            display: inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 8px;
+            font-size: 12px; font-weight: bold; color: #ffeb3b; margin-bottom: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
 
-        /* Панель кнопок управления игрой */
-        .game-actions-bar {
-            display: flex; gap: 10px; justify-content: center; margin-bottom: 8px;
-        }
+        .game-actions-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 5px; }
 
-        /* Рука игрока внизу */
         .player-hand-area {
             display: flex; justify-content: center; align-items: center;
-            min-height: 90px; padding: 5px; overflow-x: auto; gap: -20px; position: relative;
+            min-height: 85px; padding: 5px; overflow-x: auto; gap: -15px; position: relative;
         }
 
-        /* Стили игральной карты (CSS Engine) */
+        /* Стиль игральных карт */
         .playing-card {
-            width: 55px; height: 78px; background: #ffffff; border-radius: 6px;
+            width: 52px; height: 74px; background: #ffffff; border-radius: 6px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.4); display: flex; flex-direction: column;
             justify-content: space-between; padding: 4px; box-sizing: border-box;
-            font-weight: bold; font-size: 13px; cursor: pointer; transition: transform 0.2s, margin 0.2s;
-            position: relative; flex-shrink: 0; border: 1px solid #ccc;
+            font-weight: bold; font-size: 12px; cursor: pointer; transition: transform 0.2s;
+            position: relative; flex-shrink: 0; border: 1px solid #bdc3c7;
         }
-        .playing-card:hover { transform: translateY(-10px); z-index: 10; }
-        .playing-card.selected { transform: translateY(-15px); border: 2px solid #2ecc71; z-index: 10; }
+        .playing-card:hover { transform: translateY(-8px); z-index: 10; }
+        .playing-card.selected { transform: translateY(-14px); border: 2px solid #2ecc71; z-index: 10; }
         
         .card-red { color: #e74c3c; }
         .card-black { color: #2c3e50; }
         
         .card-top-left { display: flex; flex-direction: column; align-items: center; line-height: 1; }
-        .card-center-suit { font-size: 20px; align-self: center; justify-self: center; margin: auto; }
+        .card-center-suit { font-size: 18px; margin: auto; }
         .card-bottom-right { display: flex; flex-direction: column; align-items: center; line-height: 1; transform: rotate(180deg); }
-
-        /* Рубашка карты */
-        .card-back {
-            width: 55px; height: 78px; background: #1a2733; border: 2px solid #ffffff;
-            border-radius: 6px; background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
-            background-size: 8px 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
@@ -285,10 +249,6 @@
             <div class="top-currencies">
                 <div class="currency-item" onclick="openBalanceModal()" title="Фишки">
                     <span>🪙</span> <span id="chips-val">0</span>
-                </div>
-                <div id="bell-btn" style="position:relative; cursor:pointer; font-size:22px; padding: 0 5px;" title="Уведомления">
-                    🔔
-                    <div class="bell-badge" id="bell-badge" style="position:absolute; top:-3px; right:0; background:#e74c3c; color:white; font-size:10px; width:16px; height:16px; border-radius:50%; display:none; align-items:center; justify-content:center;">0</div>
                 </div>
             </div>
         </div>
@@ -325,15 +285,7 @@
             <button class="modal-close" onclick="document.getElementById('profile-modal').style.display='none'">✕</button>
             <div class="avatar-large" id="modal-avatar">👤</div>
             <h3 id="modal-profile-name" style="margin: 5px 0 0 0; font-size: 18px; color: #2ecc71;">Игрок</h3>
-            <div id="modal-profile-username" style="font-size: 12px; color: #bdc3c7; margin-bottom: 2px;">@username</div>
-            <div id="modal-profile-status" style="font-size: 12px; font-weight: bold; margin-bottom: 10px; color: #2ecc71;">🟢 В сети</div>
-
-            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 12px; padding: 10px; text-align: left; font-size: 13px;">
-                <div style="color: #f1c40f; font-weight: bold; margin-bottom: 4px;">🏆 Победы:</div>
-                <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Дурак: <span style="color:#fff;">0</span></div>
-                <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Покер: <span style="color:#fff;">0</span></div>
-                <div style="display:flex; justify-content:space-between; margin:2px 0; color:#ccc;">Сундучок: <span style="color:#fff;">0</span></div>
-            </div>
+            <div id="modal-profile-username" style="font-size: 12px; color: #bdc3c7;">@username</div>
         </div>
     </div>
 
@@ -341,10 +293,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; margin-top: 15px; text-align: center;">
-                <p style="color:#ccc; font-size:14px; margin:0 0 10px 0;">Текущая версия:</p>
-                <div style="font-size: 20px; font-weight: bold; color: #2ecc71;">Версия 4.0.0 (Full Game)</div>
-            </div>
+            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 5.0.0 (Full Durak Engine)</div>
         </div>
     </div>
 
@@ -352,10 +301,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('game-select-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">🎮 Выбор игры</h3>
-            <div style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
-                <button class="btn-green" onclick="openDurakSettings()" style="padding:14px; font-size:16px;">🃏 Дурак Онлайн</button>
-                <button style="background:#2980b9; padding:14px; font-size:16px;" onclick="alert('Покер в разработке')">🎲 Покер</button>
-            </div>
+            <button class="btn-green" onclick="openDurakSettings()" style="width:100%; padding:14px; font-size:16px; margin-top:10px;">🃏 Дурак Онлайн</button>
         </div>
     </div>
 
@@ -385,35 +331,28 @@
                 </div>
             </div>
 
-            <div class="game-param-group">
-                <div class="game-param-title">Режим игры:</div>
-                <div class="param-options">
-                    <div class="param-btn selected" onclick="setParam(this, 'type', 'podkidnoy')">Подкидной</div>
-                    <div class="param-btn" onclick="setParam(this, 'type', 'perevodnoy')">Переводной</div>
-                </div>
-            </div>
-
             <button class="btn-green" onclick="createDurakRoom()" style="width:100%; padding:14px; margin-top:15px; font-size:16px;">Создать стол</button>
         </div>
     </div>
 
     <!-- Лобби ожидания стола -->
-    <div id="lobby-screen" class="modal-overlay">
+    <div id="lobby-screen" class="modal-overlay" style="display:none;">
         <div class="modal-card" style="background: var(--green-table); border: 5px solid #0d3811;">
             <button class="modal-close" onclick="leaveRoom()">✕</button>
             <div id="room-header-text" style="font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px;">Стол: Код 0000</div>
-            <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 15px;">Ставка: 100 | Колода: 36 | Игроков: 2</div>
+            <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 15px;">Ставка: 100 | Колода: 36 | Игроков: 1/2</div>
             
             <div style="display: flex; justify-content: center; gap: 12px; margin: 15px 0; flex-wrap: wrap;" id="lobby-slots-container"></div>
 
             <div style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:10px;">
-                <button class="btn-white" id="start-game-btn" onclick="startGameNow()" style="width: 100%; padding: 14px; display:none;">Начать игру</button>
+                <!-- Кнопка блокируется, пока не наберется нужное число игроков -->
+                <button class="btn-white btn-disabled" id="start-game-btn" onclick="startGameNow()" style="width: 100%; padding: 14px;" disabled>Ожидание игроков...</button>
                 <button class="btn-red" onclick="leaveRoom()" style="width: 100%; padding: 12px;">Выйти</button>
             </div>
         </div>
     </div>
 
-    <!-- --- ИГРОВОЙ СТОЛ (ДУРАК) --- -->
+    <!-- ИГРОВОЙ СТОЛ -->
     <div id="game-table-screen">
         <div class="table-top-bar">
             <div id="table-room-code">Стол #0000</div>
@@ -421,29 +360,24 @@
             <button onclick="leaveRoom()" style="padding: 4px 10px; font-size: 11px; background: #c0392b;">Выйти</button>
         </div>
 
-        <!-- Оппоненты по кругу стола -->
         <div class="table-opponents" id="table-opponents-container"></div>
 
-        <!-- Центр стола: Колода, козырь и карты на столе -->
         <div class="table-center-felt">
             <div class="deck-zone" id="deck-zone">
                 <div class="deck-stack" id="deck-stack-el"></div>
-                <div id="trump-card-slot"></div>
-                <div id="deck-count-badge" style="font-size: 12px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 8px;">36 карт</div>
+                <div id="trump-card-slot" style="position: absolute; left: 15px; top: 0; transform: rotate(90deg);"></div>
+                <div id="deck-count-badge" style="position: absolute; left: 0; bottom: -20px; font-size: 11px; width: 60px; color:#fff;">36 карт</div>
             </div>
 
-            <div class="game-status-banner" id="game-status-text">Ожидание хода...</div>
-
+            <div class="game-status-banner" id="game-status-text">Идет игра...</div>
             <div class="battle-pairs-container" id="battle-pairs-area"></div>
         </div>
 
-        <!-- Кнопки действий во время игры (Бито / Взято) -->
         <div class="game-actions-bar" id="game-action-buttons">
             <button class="btn-green" id="btn-bito" onclick="actionBito()" style="display:none;">Бито</button>
             <button class="btn-red" id="btn-take" onclick="actionTake()" style="display:none;">Взято</button>
         </div>
 
-        <!-- Рука игрока внизу -->
         <div class="player-hand-area" id="player-hand-container"></div>
     </div>
 
@@ -468,11 +402,9 @@
         } catch (e) {}
 
         document.getElementById('top-username').innerText = myName;
-        if (photoUrl) {
-            document.getElementById('avatar-top-box').innerHTML = `<img src="${photoUrl}" alt="avatar">`;
-        }
+        if (photoUrl) document.getElementById('avatar-top-box').innerHTML = `<img src="${photoUrl}">`;
 
-        let durakSettings = { bet: 100, players: 2, deck: '36', type: 'podkidnoy' };
+        let durakSettings = { bet: 100, players: 2, deck: '36' };
         let currentRoomCode = null;
         let isHost = false;
         let gamePollTimer = null;
@@ -494,21 +426,16 @@
             document.getElementById('durak-settings-modal').style.display = 'flex';
         };
 
-        window.openFriendsListModal = function() { document.getElementById('friends-only-modal').style.display = 'flex'; };
-        window.openBalanceModal = function() { document.getElementById('balance-modal').style.display = 'flex'; };
-
-        // Генерация колоды карт
         function generateDeck(deckSize) {
             const suits = ['♠', '♣', '♦', '♥'];
-            let ranks = [];
-            if (deckSize === '24') ranks = ['9', '10', 'J', 'Q', 'K', 'A'];
-            else if (deckSize === '36') ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-            else ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            let ranks = deckSize === '24' ? ['9', '10', 'J', 'Q', 'K', 'A'] :
+                        deckSize === '36' ? ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'] :
+                        ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
             let deck = [];
             for (let s of suits) {
                 for (let r of ranks) {
-                    deck.push({ rank: r, suit: s, id: r + s });
+                    deck.push({ rank: r, suit: s, id: r + s + Math.random() });
                 }
             }
             // Перемешивание Fisher-Yates
@@ -519,17 +446,16 @@
             return deck;
         }
 
-        // Рендер HTML карты
         function renderCardHTML(card, isSmall = false) {
-            if (!card) return '<div class="card-back"></div>';
+            if (!card) return '<div class="card-back" style="width:50px;height:70px;background:#1a2733;border-radius:6px;"></div>';
             const isRed = card.suit === '♦' || card.suit === '♥';
             const colorClass = isRed ? 'card-red' : 'card-black';
-            const width = isSmall ? '45px' : '55px';
-            const height = isSmall ? '65px' : '78px';
-            const fontSize = isSmall ? '11px' : '13px';
+            const width = isSmall ? '42px' : '52px';
+            const height = isSmall ? '60px' : '74px';
+            const fontSize = isSmall ? '11px' : '12px';
 
             return `
-                <div class="playing-card ${colorClass}" style="width:${width}; height:${height}; font-size:${fontSize};" data-cardid="${card.id}">
+                <div class="playing-card ${colorClass}" style="width:${width}; height:${height}; font-size:${fontSize};">
                     <div class="card-top-left"><span>${card.rank}</span><span>${card.suit}</span></div>
                     <div class="card-center-suit">${card.suit}</div>
                     <div class="card-bottom-right"><span>${card.rank}</span><span>${card.suit}</span></div>
@@ -537,7 +463,6 @@
             `;
         }
 
-        // Создание комнаты
         window.createDurakRoom = async function() {
             durakSettings.bet = document.getElementById('durak-bet').value || 100;
             document.getElementById('durak-settings-modal').style.display = 'none';
@@ -548,21 +473,17 @@
 
             const roomData = {
                 code: randomCode,
-                host: myName,
-                hostPhoto: photoUrl,
                 settings: durakSettings,
                 status: 'lobby',
-                players: { [myName]: { name: myName, photo: photoUrl, cards: [], role: 'host' } },
+                players: { [myName]: { name: myName, photo: photoUrl, cards: [] } },
                 game: null
             };
 
-            try {
-                await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData)
-                });
-                openLobbyUI(roomData);
-                startRoomPolling(randomCode);
-            } catch(e) { alert("Ошибка создания стола!"); }
+            await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData)
+            });
+            openLobbyUI(roomData);
+            startRoomPolling(randomCode);
         };
 
         window.joinRoomByCode = async function() {
@@ -571,49 +492,54 @@
             currentRoomCode = code;
             isHost = false;
 
-            try {
-                const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
-                const roomData = await res.json();
-                if (!roomData) { alert("Стол не найден!"); return; }
+            const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
+            const roomData = await res.json();
+            if (!roomData) { alert("Стол не найден!"); return; }
 
-                if (Object.keys(roomData.players || {}).length >= roomData.settings.players) {
-                    alert("Стол полон!"); return;
-                }
+            let playersCount = Object.keys(roomData.players || {}).length;
+            if (playersCount >= roomData.settings.players) { alert("Стол уже полон!"); return; }
 
-                roomData.players[myName] = { name: myName, photo: photoUrl, cards: [], role: 'guest' };
-                await fetch(`${DATABASE_URL}/rooms/${code}/players.json`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData.players)
-                });
+            roomData.players[myName] = { name: myName, photo: photoUrl, cards: [] };
+            await fetch(`${DATABASE_URL}/rooms/${code}/players.json`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData.players)
+            });
 
-                openLobbyUI(roomData);
-                startRoomPolling(code);
-            } catch(e) { alert("Ошибка подключения."); }
+            openLobbyUI(roomData);
+            startRoomPolling(code);
         };
 
         function openLobbyUI(roomData) {
             document.getElementById('room-header-text').innerText = `Стол: Код ${roomData.code}`;
-            document.getElementById('room-params-info').innerText = `Ставка: ${roomData.settings.bet} | Колода: ${roomData.settings.deck} | Игроков: ${Object.keys(roomData.players).length}/${roomData.settings.players}`;
+            let pKeys = Object.keys(roomData.players || {});
+            let maxP = roomData.settings.players;
+            document.getElementById('room-params-info').innerText = `Ставка: ${roomData.settings.bet} | Игроков: ${pKeys.length}/${maxP}`;
             
             const container = document.getElementById('lobby-slots-container');
             container.innerHTML = '';
             
-            let playersArr = Object.values(roomData.players);
-            for (let i = 0; i < roomData.settings.players; i++) {
-                let p = playersArr[i];
-                if (p) {
+            for (let i = 0; i < maxP; i++) {
+                let pName = pKeys[i];
+                if (pName) {
+                    let p = roomData.players[pName];
                     container.innerHTML += `
-                        <div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px solid #2ecc71; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px solid #2ecc71; display: flex; align-items: center; justify-content: center; position: relative;">
                             ${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : '👤'}
-                            ${i === 0 ? '<div style="position: absolute; top: -9px; right: -5px; font-size: 12px; background: #ffeb3b; color: #000; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">👑</div>' : ''}
                         </div>
                     `;
                 } else {
-                    container.innerHTML += `<div style="width: 55px; height: 55px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 22px;">+</div>`;
+                    container.innerHTML += `<div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa;">+</div>`;
                 }
             }
 
-            if (isHost && playersArr.length >= 1) {
-                document.getElementById('start-game-btn').style.display = 'block';
+            const startBtn = document.getElementById('start-game-btn');
+            if (pKeys.length >= maxP) {
+                startBtn.disabled = false;
+                startBtn.classList.remove('btn-disabled');
+                startBtn.innerText = "Начать игру";
+            } else {
+                startBtn.disabled = true;
+                startBtn.classList.add('btn-disabled');
+                startBtn.innerText = `Ожидание игроков (${pKeys.length}/${maxP})...`;
             }
 
             document.getElementById('menu-screen').style.display = 'none';
@@ -623,71 +549,63 @@
         function startRoomPolling(code) {
             if (gamePollTimer) clearInterval(gamePollTimer);
             gamePollTimer = setInterval(async () => {
-                try {
-                    const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
-                    const d = await res.json();
-                    if (!d) { leaveRoom(); return; }
+                const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
+                const d = await res.json();
+                if (!d) { leaveRoom(); return; }
 
-                    if (d.status === 'playing') {
-                        document.getElementById('lobby-screen').style.display = 'none';
-                        document.getElementById('game-table-screen').style.display = 'flex';
-                        renderGameTable(d);
-                    } else {
-                        openLobbyUI(d);
-                    }
-                } catch(e) {}
+                if (d.status === 'playing') {
+                    document.getElementById('lobby-screen').style.display = 'none';
+                    document.getElementById('game-table-screen').style.display = 'flex';
+                    renderGameTable(d);
+                } else {
+                    openLobbyUI(d);
+                }
             }, 1500);
         }
 
-        // Начало игры (Хост запускает)
         window.startGameNow = async function() {
-            try {
-                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
-                const room = await res.json();
-                
-                const deck = generateDeck(room.settings.deck);
-                const trump = deck[deck.length - 1]; // Последняя карта — козырь
+            const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+            const room = await res.json();
+            
+            const deck = generateDeck(room.settings.deck);
+            const trump = deck[deck.length - 1];
 
-                let playersKeys = Object.keys(room.players);
-                for (let pKey of playersKeys) {
-                    room.players[pKey].cards = deck.splice(0, 6);
-                }
+            let pKeys = Object.keys(room.players);
+            for (let key of pKeys) {
+                room.players[key].cards = deck.splice(0, 6);
+            }
 
-                room.status = 'playing';
-                room.game = {
-                    deck: deck,
-                    trump: trump,
-                    attacker: playersKeys[0],
-                    defender: playersKeys[1] || playersKeys[0],
-                    tablePairs: [], // Массив пар {attack: card, defend: card}
-                    statusText: `Ходит ${room.players[playersKeys[0]].name}`
-                };
+            room.status = 'playing';
+            room.game = {
+                deck: deck,
+                trump: trump,
+                attacker: pKeys[0],
+                defender: pKeys[1] || pKeys[0],
+                tablePairs: [],
+                statusText: `Ходит ${room.players[pKeys[0]].name}`
+            };
 
-                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
-                });
-            } catch(e) { alert("Не удалось начать игру"); }
+            await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+            });
         };
 
-        // Рендеринг игрового стола
         function renderGameTable(room) {
             document.getElementById('table-room-code').innerText = `Стол #${room.code}`;
             document.getElementById('trump-info').innerText = `Козырь: ${room.game.trump.rank}${room.game.trump.suit}`;
             document.getElementById('deck-count-badge').innerText = `${room.game.deck.length} карт`;
 
-            // Рендерим оппонентов
+            // Оппоненты
             const oppContainer = document.getElementById('table-opponents-container');
             oppContainer.innerHTML = '';
             let pKeys = Object.keys(room.players);
-            let myIdx = pKeys.indexOf(myName);
-            
-            // Расположение оппонентов по кругу
             let others = pKeys.filter(k => k !== myName);
+            
             others.forEach((key, idx) => {
                 let p = room.players[key];
-                let leftPercent = 20 + (idx * 60) / Math.max(1, others.length);
+                let leftPercent = 25 + (idx * 50);
                 oppContainer.innerHTML += `
-                    <div class="opponent-seat" style="left: ${leftPercent}%; top: 10px;">
+                    <div class="opponent-seat" style="left: ${leftPercent}%; top: 5px;">
                         <div class="opp-avatar">
                             ${p.photo ? `<img src="${p.photo}">` : '👤'}
                             <div class="opp-cards-count">${p.cards ? p.cards.length : 0}</div>
@@ -697,18 +615,7 @@
                 `;
             });
 
-            // Колода и козырь
-            const deckStackEl = document.getElementById('deck-stack-el');
-            const trumpSlot = document.getElementById('trump-card-slot');
-            if (room.game.deck.length > 0) {
-                deckStackEl.style.display = 'block';
-                trumpSlot.innerHTML = `<div style="position:absolute; left:25px; top:0; transform:rotate(90deg);">${renderCardHTML(room.game.trump, true)}</div>`;
-            } else {
-                deckStackEl.style.display = 'none';
-                trumpSlot.innerHTML = `<div style="font-size:11px; color:#ffeb3b;">Козырь: ${room.game.trump.suit}</div>`;
-            }
-
-            // Карты на столе (атака / защита)
+            // Карты на столе
             const battleArea = document.getElementById('battle-pairs-area');
             battleArea.innerHTML = '';
             (room.game.tablePairs || []).forEach(pair => {
@@ -720,7 +627,7 @@
                 `;
             });
 
-            // Моя рука
+            // Рука игрока
             const handContainer = document.getElementById('player-hand-container');
             handContainer.innerHTML = '';
             let myData = room.players[myName];
@@ -733,15 +640,11 @@
                 });
             }
 
-            // Статус и кнопки
             document.getElementById('game-status-text').innerText = room.game.statusText;
-            let isMyTurn = (room.game.attacker === myName || room.game.defender === myName);
-            
             document.getElementById('btn-bito').style.display = (room.game.attacker === myName && room.game.tablePairs.length > 0) ? 'inline-block' : 'none';
             document.getElementById('btn-take').style.display = (room.game.defender === myName && room.game.tablePairs.length > 0) ? 'inline-block' : 'none';
         }
 
-        // Клик по карте в руке
         async function onCardClick(card, el) {
             el.classList.toggle('selected');
             if (selectedCards.find(c => c.id === card.id)) {
@@ -750,81 +653,67 @@
                 selectedCards.push(card);
             }
 
-            // Если карта выбрана, делаем ход в базу данных
             if (selectedCards.length === 1) {
                 let chosen = selectedCards[0];
                 selectedCards = [];
 
-                try {
-                    const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
-                    const room = await res.json();
-                    
-                    let myData = room.players[myName];
-                    myData.cards = myData.cards.filter(c => c.id !== chosen.id);
+                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+                let room = await res.json();
+                
+                let myData = room.players[myName];
+                myData.cards = myData.cards.filter(c => c.id !== chosen.id);
 
-                    // Если я атакующий
-                    if (room.game.attacker === myName) {
-                        room.game.tablePairs.push({ attack: chosen, defend: null });
-                        room.game.statusText = `Ожидание защиты...`;
-                        let pKeys = Object.keys(room.players);
-                        let nextDef = pKeys[(pKeys.indexOf(myName) + 1) % pKeys.length];
-                        room.game.defender = nextDef;
-                    } 
-                    // Если я защищающийся
-                    else if (room.game.defender === myName) {
-                        let unbeat = room.game.tablePairs.find(p => !p.defend);
-                        if (unbeat) {
-                            unbeat.defend = chosen;
-                            room.game.statusText = `Карта отбита!`;
-                        }
+                if (room.game.attacker === myName) {
+                    room.game.tablePairs.push({ attack: chosen, defend: null });
+                    room.game.statusText = `Ожидание ответа...`;
+                } else if (room.game.defender === myName) {
+                    let unbeat = room.game.tablePairs.find(p => !p.defend);
+                    if (unbeat) {
+                        unbeat.defend = chosen;
+                        room.game.statusText = `Отбито!`;
                     }
+                }
 
-                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
-                    });
-                } catch(e) {}
+                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                });
             }
         }
 
         async function actionBito() {
-            try {
-                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
-                const room = await res.json();
-                room.game.tablePairs = [];
-                room.game.statusText = "Бито! Новый ход.";
-                
-                // Добираем карты до 6
-                let deck = room.game.deck || [];
-                for (let k of Object.keys(room.players)) {
-                    while (room.players[k].cards.length < 6 && deck.length > 0) {
-                        room.players[k].cards.push(deck.pop());
-                    }
+            const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+            let room = await res.json();
+            room.game.tablePairs = [];
+            room.game.statusText = "Бито! Раздача карт...";
+            
+            let deck = room.game.deck || [];
+            for (let k of Object.keys(room.players)) {
+                while (room.players[k].cards.length < 6 && deck.length > 0) {
+                    room.players[k].cards.push(deck.pop());
                 }
-                room.game.deck = deck;
+            }
+            room.game.deck = deck;
 
-                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
-                });
-            } catch(e) {}
+            await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+            });
         }
 
         async function actionTake() {
-            try {
-                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
-                const room = await res.json();
-                
-                let myData = room.players[myName];
-                room.game.tablePairs.forEach(p => {
-                    myData.cards.push(p.attack);
-                    if (p.defend) myData.cards.push(p.defend);
-                });
-                room.game.tablePairs = [];
-                room.game.statusText = `${myName} взял карты!`;
+            const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+            let room = await res.json();
+            
+            let myData = room.players[myName];
+            room.game.tablePairs.forEach(p => {
+                myData.cards.push(p.attack);
+                if (p.defend) myData.cards.push(p.defend);
+            });
+            room.game.tablePairs = [];
+            room.game.statusText = `${myName} взял карты!`;
 
-                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
-                });
-            } catch(e) {}
+            await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+            });
         }
 
         window.leaveRoom = function() {
