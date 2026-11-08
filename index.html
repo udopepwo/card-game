@@ -60,7 +60,6 @@
             display: none;
         }
 
-        /* Смещение элементов ниже для идеального центрирования */
         #menu-screen {
             display: flex;
             flex-direction: column;
@@ -94,22 +93,22 @@
             padding: 15px; border-radius: 12px; width: 100%; box-sizing: border-box;
         }
 
-        /* Лобби со смещением вниз и фиксированной кнопкой выхода */
+        /* Идеальное центрирование лобби по вертикали */
         #lobby-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             min-height: 85vh;
-            padding-top: 15px;
             box-sizing: border-box;
+            gap: 15px;
         }
         .card-table {
             background: #2e7d32;
             border: 3px solid #1b5e20;
             border-radius: 14px;
             padding: 15px;
-            margin: 10px auto;
+            margin: 0 auto;
             max-width: 400px;
             width: 90%;
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
@@ -130,6 +129,7 @@
             position: relative; font-size: 24px; color: #777; cursor: pointer;
         }
         .player-slot.filled { border: 3px solid #4caf50; border-style: solid; }
+        .player-slot.pending { border: 3px dashed #ff9800; opacity: 0.7; }
         .player-slot img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .host-crown {
             position: absolute; top: -10px; right: -5px; font-size: 16px;
@@ -144,12 +144,11 @@
         }
         .ready-badge.not-ready { background: #d32f2f; color: white; }
         .ready-badge.ready { background: #4caf50; color: white; }
+        .ready-badge.pending { background: #ff9800; color: white; }
 
         .lobby-bottom-area {
             width: 100%;
             max-width: 340px;
-            margin-top: auto; /* Прижимает блок к нижней части экрана */
-            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -176,8 +175,10 @@
             background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; max-height: 120px; overflow-y: auto;
         }
         .friend-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
         }
+        .friend-item:hover { color: #4caf50; }
 
         .tictactoe-grid {
             display: grid; grid-template-columns: repeat(3, 75px); grid-template-rows: repeat(3, 75px);
@@ -264,6 +265,40 @@
         </div>
     </div>
 
+    <!-- Модальное окно выбора режима игры -->
+    <div id="mode-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" id="close-mode-modal">✕</button>
+            <h3 style="color:#ffeb3b; margin-top:0;">Выбор режима</h3>
+            <div class="mode-option-item" onclick="selectGameMode('tictactoe')" style="background:rgba(255,255,255,0.08); padding:12px; border-radius:10px; margin:8px 0; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+                <span>❌ Крестики-нолики</span>
+                <span style="color:#4caf50; font-size:12px;">Активен</span>
+            </div>
+            <div class="mode-option-item" style="background:rgba(255,255,255,0.08); padding:12px; border-radius:10px; margin:8px 0; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+                <span>🃏 Дурак</span>
+                <span style="font-size:11px; background:#555; padding:2px 6px; border-radius:6px; color:#ccc;">Скоро</span>
+            </div>
+            <div class="mode-option-item" style="background:rgba(255,255,255,0.08); padding:12px; border-radius:10px; margin:8px 0; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+                <span>🎲 Покер</span>
+                <span style="font-size:11px; background:#555; padding:2px 6px; border-radius:6px; color:#ccc;">Скоро</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно настроек игры -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" id="close-settings-modal">✕</button>
+            <h3 style="color:#ffeb3b; margin-top:0;">Настройки игры</h3>
+            <p style="font-size:13px; color:#aaa;">Сторона для крестиков-ноликов:</p>
+            <div style="display:flex; justify-content:center; gap: 15px; margin: 20px 0;">
+                <button id="symbol-x" onclick="setSymbol('X')" style="background:#2481cc; font-size:20px; width:60px; height:60px;">X</button>
+                <button id="symbol-o" onclick="setSymbol('O')" style="background:#444; font-size:20px; width:60px; height:60px;">O</button>
+            </div>
+            <div id="settings-info" style="font-size:12px; color:#4caf50;">Вы играете крестиками (X)</div>
+        </div>
+    </div>
+
     <!-- Главное меню -->
     <div id="menu-screen">
         <div class="menu-container">
@@ -311,8 +346,8 @@
 
         <div class="lobby-bottom-area">
             <div class="lobby-controls" style="display:flex; gap:8px; justify-content:center;">
-                <button class="mode-select-btn" id="open-mode-modal" style="background:#37474f; color:#fff; border-radius:10px; padding:12px;">⚙️ Крестики-нолики</button>
-                <button class="settings-arrow-btn" style="background:#37474f; color:#fff; border-radius:10px; padding:12px;">></button>
+                <button class="mode-select-btn" id="open-mode-modal" style="background:#37474f; color:#fff; border-radius:10px; padding:12px;">⚙️ <span id="current-mode-name">Крестики-нолики</span></button>
+                <button class="settings-arrow-btn" id="open-settings-modal" style="background:#37474f; color:#fff; border-radius:10px; padding:12px;">></button>
             </div>
             <button id="start-btn" style="background: #e65100; width: 100%;">Готов! (0/2)</button>
             <button id="btn-leave-lobby" style="background: #d32f2f; font-size: 14px; padding: 12px; border-radius: 10px; width:100%;">Выйти в меню</button>
@@ -354,7 +389,7 @@
         </div>
     </div>
 
-    <div class="footer-version">Версия: 2.6.0 (Beta)</div>
+    <div class="footer-version">Версия: 2.7.0 (Beta)</div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -394,11 +429,15 @@
             let notifPollTimer = null;
             let myFriends = [];
             let myRequests = [];
+            let pendingInvitee = null; // Имя друга, которого пригласили, но он еще не зашел
 
             const profileModal = document.getElementById('profile-modal');
             const notificationsModal = document.getElementById('notifications-modal');
             const inviteModal = document.getElementById('invite-friends-modal');
+            const modeModal = document.getElementById('mode-modal');
+            const settingsModal = document.getElementById('settings-modal');
 
+            // Привязка модалок
             document.getElementById('profile-btn').addEventListener('click', () => openProfile(myName, myUsername, photoUrl, true));
             document.getElementById('close-profile').addEventListener('click', () => profileModal.style.display = 'none');
 
@@ -409,7 +448,36 @@
             document.getElementById('close-notifications').addEventListener('click', () => notificationsModal.style.display = 'none');
             document.getElementById('close-invite-modal').addEventListener('click', () => inviteModal.style.display = 'none');
 
-            // Автоматическая проверка уведомлений в реальном времени (каждые 2 секунды)
+            // Исправление кнопок режимов и настроек игры
+            document.getElementById('open-mode-modal').addEventListener('click', () => modeModal.style.display = 'flex');
+            document.getElementById('close-mode-modal').addEventListener('click', () => modeModal.style.display = 'none');
+            document.getElementById('open-settings-modal').addEventListener('click', () => settingsModal.style.display = 'flex');
+            document.getElementById('close-settings-modal').addEventListener('click', () => settingsModal.style.display = 'none');
+
+            window.selectGameMode = function(mode) {
+                if (mode !== 'tictactoe') {
+                    alert("Режим в разработке!");
+                    modeModal.style.display = 'none';
+                    return;
+                }
+                document.getElementById('current-mode-name').innerText = "Крестики-нолики";
+                modeModal.style.display = 'none';
+            };
+
+            window.setSymbol = function(sym) {
+                if (sym === 'X') {
+                    document.getElementById('symbol-x').style.background = '#2481cc';
+                    document.getElementById('symbol-o').style.background = '#444';
+                    document.getElementById('settings-info').innerText = "Вы играете крестиками (X)";
+                } else {
+                    document.getElementById('symbol-o').style.background = '#2481cc';
+                    document.getElementById('symbol-x').style.background = '#444';
+                    document.getElementById('settings-info').innerText = "Вы играете ноликами (O)";
+                }
+                settingsModal.style.display = 'none';
+            };
+
+            // Синхронизация уведомлений и друзей по личным ключам в Firebase
             function startNotificationListener() {
                 if (notifPollTimer) clearInterval(notifPollTimer);
                 notifPollTimer = setInterval(async () => {
@@ -421,8 +489,9 @@
                         
                         const fData = await friendRes.json();
                         if (fData) {
-                            // Уникализируем список друзей, чтобы не было дублей
                             myFriends = Array.from(new Set(Object.values(fData)));
+                        } else {
+                            myFriends = [];
                         }
 
                         const rData = await reqRes.json();
@@ -458,7 +527,32 @@
                 }
             };
 
+            // Функция открытия профиля (своя или чужая, с подгрузкой данных конкретного игрока)
+            window.openProfileByName = async function(targetName) {
+                if (targetName === myName) {
+                    openProfile(myName, myUsername, photoUrl, true);
+                    return;
+                }
+                try {
+                    const safeTarget = targetName.replace(/[.#$\/\[\]]/g, "_");
+                    const res = await fetch(`${DATABASE_URL}/users/${safeTarget}/profile.json`);
+                    const pData = await res.json();
+                    
+                    const tPhoto = pData?.photo || null;
+                    const tUsername = pData?.username || "@user";
+                    const tFriends = pData?.friends ? Object.values(pData.friends) : [];
+                    
+                    openProfileTarget(targetName, tUsername, tPhoto, tFriends, false);
+                } catch(e) {
+                    openProfile(targetName, "@user", null, false);
+                }
+            };
+
             function openProfile(name, username, avatar, isMe) {
+                openProfileTarget(name, username, avatar, myFriends, isMe);
+            }
+
+            function openProfileTarget(name, username, avatar, friendsList, isMe) {
                 document.getElementById('modal-profile-name').innerText = name;
                 document.getElementById('modal-profile-username').innerText = username;
                 document.getElementById('modal-avatar').innerHTML = avatar ? `<img src="${avatar}">` : '👤';
@@ -471,46 +565,12 @@
                     actionContainer.style.display = 'none';
                 }
 
-                document.getElementById('friends-count').innerText = myFriends.length;
+                document.getElementById('friends-count').innerText = friendsList.length;
                 const fContainer = document.getElementById('friends-list-container');
-                if (myFriends.length === 0) {
+                if (friendsList.length === 0) {
                     fContainer.innerHTML = '<div style="color:#888; text-align:center;">Список пуст</div>';
                 } else {
-                    fContainer.innerHTML = myFriends.map(f => `<div class="friend-item"><span>👤 ${f}</span></div>`).join('');
-                }
-
-                profileModal.style.display = 'flex';
-            }
-
-            async function sendFriendRequest(targetName) {
-                const safeTargetKey = targetName.replace(/[.#$\/\[\]]/g, "_");
-                try {
-                    await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type: 'friend', from: myName })
-                    });
-                    alert("Запрос в друзья успешно отправлен игроку " + targetName + "!");
-                    document.getElementById('friend-action-container').style.display = 'none';
-                } catch(e) {
-                    alert("Ошибка отправки запроса.");
-                }
-            }
-
-            window.acceptFriendRequest = async function(reqId, friendName) {
-                try {
-                    const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_");
-                    
-                    // Добавляем друг другу в друзья (с защитой от дублей)
-                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/friends.json`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(friendName)
-                    });
-                    await fetch(`${DATABASE_URL}/users/${safeTargetKey}/friends.json`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(myName)
-                    });
-
-                    // Удаляем запрос
-                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
+                    fContainer.innerHTML = friendsList.map(f => `<div class="friend-item" onclick="openProfileByName('${f}')"><span>👤 ${f}</span></div>`).join(''); }  profileModal.style.display = 'flex'; }  // Публикация профиля в базу при старте для корректного просмотра другими async function publishMyProfile() { try { await fetch(`${DATABASE_URL}/users/${safeMyKey}/profile.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: myUsername, photo: photoUrl }) }); } catch(e) {} } publishMyProfile();  async function sendFriendRequest(targetName) { const safeTargetKey = targetName.replace(/[.#$\/\[\]]/g, "_"); try { await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'friend', from: myName }) }); alert("Запрос в друзья успешно отправлен игроку " + targetName + "!"); document.getElementById('friend-action-container').style.display = 'none'; } catch(e) { alert("Ошибка отправки запроса."); } }  window.acceptFriendRequest = async function(reqId, friendName) { try { const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_");  await fetch(`${DATABASE_URL}/users/${safeMyKey}/friends.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(friendName) }); await fetch(`${DATABASE_URL}/users/${safeTargetKey}/friends.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(myName) });  // Удаляем запрос сразу, чтобы не было дублей и бесконечных повторов await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
 
                     if (!myFriends.includes(friendName)) myFriends.push(friendName);
                     myRequests = myRequests.filter(r => r.id !== reqId);
@@ -522,23 +582,11 @@
                 }
             };
 
-            window.inviteFriendToRoom = async function(friendName) {
-                const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_");
+            window.rejectFriendRequest = async function(reqId) {
                 try {
-                    await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type: 'room', from: myName, roomCode: currentRoomCode })
-                    });
-                    alert("Приглашение в комнату отправлено другу " + friendName + "!");
-                    inviteModal.style.display = 'none';
-                } catch(e) {
-                    alert("Ошибка отправки приглашения.");
-                }
-            };
-
-            window.joinInvitedRoom = function(roomCode) {
-                notificationsModal.style.display = 'none';
+                    await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' }); myRequests = myRequests.filter(r => r.id !== reqId); updateBellBadge(); renderNotifications(); } catch(e) {} };  window.inviteFriendToRoom = async function(friendName) { const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_"); try { pendingInvitee = friendName; await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'room', from: myName, roomCode: currentRoomCode }) });  // Показываем серую аватарку-ожидание в слоте лобби updateLobbyUI({ host: hostName, guest: null, hostPhoto: hostPhoto, guestPhoto: null, ready: { [hostName]: false } });  alert("Приглашение отправлено игроку " + friendName + "!"); inviteModal.style.display = 'none'; } catch(e) { alert("Ошибка отправки приглашения."); } };  window.joinInvitedRoom = async function(reqId, roomCode) { notificationsModal.style.display = 'none'; // Сразу удаляем инвайт из уведомлений, чтобы он был одноразовым try { await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
+                } catch(e) {}
+                
                 document.getElementById('room-code-input').value = roomCode;
                 joinRoom();
             };
@@ -554,217 +602,5 @@
                         return `
                             <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
                                 <div>🎮 <b>${r.from}</b> зовет вас в комнату (${r.roomCode})!</div>
-                                <button onclick="joinInvitedRoom('${r.roomCode}')" style="padding:6px 12px; font-size:12px; background:#4caf50;">Войти</button>
-                            </div>
-                        `;
-                    } else {
-                        return `
-                            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                                <div>👤 <b>${r.from}</b> хочет добавить вас в друзья</div>
-                                <button onclick="acceptFriendRequest('${r.id}', '${r.from}')" style="padding:6px 12px; font-size:12px; background:#4caf50;">Принять</button>
-                            </div>
-                        `;
-                    }
-                }).join('');
-            }
-
-            function renderInviteFriendsList() {
-                const container = document.getElementById('invite-friends-container');
-                if (myFriends.length === 0) {
-                    container.innerHTML = '<div style="color:#aaa; text-align:center; margin-top:20px;">У вас пока нет друзей</div>';
-                    return;
-                }
-                container.innerHTML = myFriends.map(f => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:8px;">
-                        <span>👤 ${f}</span>
-                        <button onclick="inviteFriendToRoom('${f}')" style="padding:4px 10px; font-size:11px; background:#2481cc;">Позвать</button>
-                    </div>
-                `).join('');
-            }
-
-            // Управление меню и комнатами
-            document.getElementById('btn-create').addEventListener('click', createRoom);
-            document.getElementById('btn-join').addEventListener('click', joinRoom);
-            document.getElementById('start-btn').addEventListener('click', toggleReady);
-            document.getElementById('btn-leave-lobby').addEventListener('click', leaveRoom);
-            document.getElementById('btn-leave-game').addEventListener('click', leaveRoom);
-
-            function showScreen(screenId) {
-                document.getElementById('menu-screen').style.display = 'none';
-                document.getElementById('lobby-screen').style.display = 'none';
-                document.getElementById('game-screen').style.display = 'none';
-
-                if (screenId === 'menu-screen') {
-                    document.getElementById('menu-screen').style.display = 'flex';
-                } else {
-                    document.getElementById(screenId).style.display = 'block';
-                }
-            }
-
-            async function createRoom() {
-                const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-                currentRoomCode = randomCode;
-                hostName = myName;
-                guestName = null;
-                hostPhoto = photoUrl;
-                guestPhoto = null;
-                isHost = true;
-                isReady = false;
-
-                const roomData = {
-                    host: hostName, guest: null, hostPhoto: hostPhoto, guestPhoto: null,
-                    status: 'lobby', ready: { [hostName]: false }, messages: {},
-                    game: { board: ['', '', '', '', '', '', '', '', ''], turn: 'X', winner: null }
-                };
-
-                try {
-                    await fetch(`${DATABASE_URL}/rooms/${randomCode}.json`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData)
-                    });
-                    showScreen('lobby-screen');
-                    updateLobbyUI(roomData);
-                    startPolling(randomCode);
-                } catch(e) { alert("Ошибка создания комнаты!"); }
-            }
-
-            async function joinRoom() {
-                const codeInput = document.getElementById('room-code-input').value.trim();
-                if (codeInput.length !== 4) { alert("Введите 4 цифры кода!"); return; }
-
-                currentRoomCode = codeInput;
-                isHost = false; isReady = false;
-
-                try {
-                    const res = await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`);
-                    const roomData = await res.json();
-                    if (!roomData) { alert("Комната не найдена!"); return; }
-
-                    hostName = roomData.host; guestName = myName;
-                    hostPhoto = roomData.hostPhoto; guestPhoto = photoUrl;
-                    roomData.guest = myName; roomData.guestPhoto = guestPhoto;
-                    roomData.ready[myName] = false;
-
-                    await fetch(`${DATABASE_URL}/rooms/${codeInput}.json`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData)
-                    });
-
-                    showScreen('lobby-screen');
-                    updateLobbyUI(roomData);
-                    startPolling(codeInput);
-                } catch(e) { alert("Ошибка подключения."); }
-            }
-
-            async function toggleReady() {
-                isReady = !isReady;
-                document.getElementById('start-btn').style.background = isReady ? '#2e7d32' : '#e65100';
-                try {
-                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/ready/${myName}.json`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(isReady)
-                    });
-                } catch(e) {}
-            }
-
-            function startPolling(code) {
-                if (pollTimer) clearInterval(pollTimer);
-                pollTimer = setInterval(async () => {
-                    try {
-                        const res = await fetch(`${DATABASE_URL}/rooms/${code}.json`);
-                        const d = await res.json();
-                        if (!d) { alert("Комната удалена!"); leaveRoom(); return; }
-
-                        hostName = d.host; guestName = d.guest;
-                        hostPhoto = d.hostPhoto; guestPhoto = d.guestPhoto;
-                        updateLobbyUI(d);
-
-                        if (d.status === 'lobby') {
-                            let readyCount = 0, totalCount = d.guest ? 2 : 1;
-                            if (d.ready) {
-                                if (d.ready[d.host]) readyCount++;
-                                if (d.guest && d.ready[d.guest]) readyCount++;
-                            }
-                            document.getElementById('start-btn').innerText = `Готов! (${readyCount}/${totalCount})`;
-                            if (totalCount === 2 && readyCount === 2 && isHost) {
-                                await fetch(`${DATABASE_URL}/rooms/${code}/status.json`, {
-                                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify('playing')
-                                });
-                            }
-                        }
-                        if (d.status === 'playing') {
-                            showScreen('game-screen');
-                            renderTicTacToe(d.game);
-                        }
-                    } catch(e) {}
-                }, 1000);
-            }
-
-            function updateLobbyUI(d) {
-                document.getElementById('room-header-text').innerHTML = `Комната создана. Код: <span style="color:#ffffff;">${currentRoomCode}</span>`;
-                const slot0 = document.getElementById('slot-0');
-                if (hostName) {
-                    slot0.classList.add('filled');
-                    slot0.innerHTML = `${hostPhoto ? `<img src="${hostPhoto}">` : '<span>👤</span>'}<div class="host-crown">👑</div><div class="ready-badge ${d.ready && d.ready[hostName] ? 'ready' : 'not-ready'}">${d.ready && d.ready[hostName] ? '✓' : '✕'}</div>`;
-                }
-                const slot1 = document.getElementById('slot-1');
-                if (guestName) {
-                    slot1.classList.add('filled');
-                    slot1.innerHTML = `${guestPhoto ? `<img src="${guestPhoto}">` : '<span>👤</span>'}<div class="ready-badge ${d.ready && d.ready[guestName] ? 'ready' : 'not-ready'}">${d.ready && d.ready[guestName] ? '✓' : '✕'}</div>`;
-                } else {
-                    slot1.classList.remove('filled');
-                    slot1.innerHTML = `<span>+</span><div class="ready-badge not-ready">✕</div>`;
-                }
-            }
-
-            function renderTicTacToe(gameData) {
-                const board = gameData.board;
-                document.querySelectorAll('.cell').forEach((cell, idx) => { cell.innerText = board[idx] || ''; });
-                let mySymbol = isHost ? 'X' : 'O';
-                let turnInfo = document.getElementById('turn-info');
-
-                if (gameData.winner) {
-                    turnInfo.innerText = gameData.winner === 'draw' ? "Ничья! Возврат в лобби..." : `Победил! Возврат в лобби...`;
-                    if (isHost && !gameData.resetting) {
-                        gameData.resetting = true;
-                        setTimeout(async () => {
-                            await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
-                                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ status: 'lobby', ready: { [hostName]: false, ...(guestName ? { [guestName]: false } : {}) }, game: { board: ['', '', '', '', '', '', '', '', ''], turn: 'X', winner: null } })
-                            });
-                        }, 3000);
-                    }
-                    return;
-                }
-                turnInfo.innerHTML = gameData.turn === mySymbol ? `<span style="color:#4caf50;">Ваш ход (${mySymbol})!</span>` : `Ходит соперник`;
-            }
-
-            window.MakeMove = async function(index) {
-                try {
-                    const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/game.json`);
-                    const game = await res.json();
-                    let mySymbol = isHost ? 'X' : 'O';
-                    if (game.winner || game.turn !== mySymbol || game.board[index] !== '') return;
-                    game.board[index] = mySymbol;
-                    game.turn = mySymbol === 'X' ? 'O' : 'X';
-                    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-                    for (let w of wins) {
-                        let [a,b,c] = w;
-                        if (game.board[a] && game.board[a] === game.board[b] && game.board[a] === game.board[c]) game.winner = mySymbol;
-                    }
-                    if (!game.winner && !game.board.includes('')) game.winner = 'draw';
-                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}/game.json`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(game)
-                    });
-                } catch(e) {}
-            };
-            document.querySelectorAll('.cell').forEach((cell, idx) => { cell.onclick = () => MakeMove(idx); });
-
-            async function leaveRoom() {
-                if (isHost && currentRoomCode) {
-                    try { await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, { method: 'DELETE' }); } catch(e) {}
-                }
-                if (pollTimer) clearInterval(pollTimer);
-                showScreen('menu-screen');
-            }
-        });
-    </script>
-</body>
-</html>
+                                <div style="display:flex; gap:6px;">
+                                    <button onclick="joinInvitedRoom('${r.id}', '${r.roomCode}')" style="padding:6px 10px; font-size:11px; background:#4caf50;">Войти</button>
