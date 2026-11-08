@@ -92,7 +92,7 @@
             border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
             padding: 15px; max-width: 400px; margin: 0 auto 15px auto; width: 100%;
             box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-            z-index: 15;
+            z-index: 15; pointer-events: auto;
         }
 
         /* Модальные окна */
@@ -133,7 +133,7 @@
 
         button {
             color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 12px;
-            cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto;
         }
         button:active { opacity: 0.85; }
         .btn-green { background: #27ae60; border: 1px solid rgba(255, 255, 255, 0.2); }
@@ -143,7 +143,7 @@
         input[type="text"], input[type="number"] {
             padding: 12px; font-size: 16px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2); text-align: center; width: 100%;
-            background: rgba(0,0,0,0.5); color: #fff;
+            background: rgba(0,0,0,0.5); color: #fff; pointer-events: auto;
         }
 
         /* ЛОББИ СТОЛА */
@@ -220,7 +220,7 @@
 
         .player-hand-area {
             display: flex; justify-content: center; align-items: center;
-            min-height: 95px; padding: 5px; overflow-x: auto; position: relative;
+            min-height: 95px; padding: 5px; overflow-x: auto; position: relative; pointer-events: auto;
         }
         .hand-cards-flex { display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; }
 
@@ -230,8 +230,9 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.4); display: flex; flex-direction: column;
             justify-content: space-between; padding: 4px; font-weight: bold; font-size: 12px;
             cursor: pointer; transition: transform 0.2s; position: relative; flex-shrink: 0; border: 1px solid #bdc3c7;
+            pointer-events: auto;
         }
-        .playing-card.selectable:hover { transform: translateY(-8px); z-index: 10; }
+        .playing-card:hover { transform: translateY(-8px); z-index: 10; }
         
         .card-red { color: #e74c3c; }
         .card-black { color: #2c3e50; }
@@ -321,7 +322,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 9.0.0 (Direct Cards Fix)</div>
+            <div style="font-size: 18px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 10.0.0 (Player 1 & Player 2 Fix)</div>
         </div>
     </div>
 
@@ -346,7 +347,7 @@
             <div class="game-param-group">
                 <div class="game-param-title">Количество игроков: <span id="players-count-val" style="color:#2ecc71; font-weight:bold;">2</span></div>
                 <div class="range-slider-container">
-                    <input type="range" id="players-range" min="2" max="6" value="2" oninput="updatePlayersCount(this.value)">
+                    <input type="range" id="players-range" min="2" max="2" value="2" disabled>
                 </div>
             </div>
 
@@ -418,6 +419,7 @@
         let myName = "Игрок_" + Math.floor(Math.random() * 900 + 100);
         let myUsername = "@player";
         let photoUrl = null;
+        let myAssignedRole = null; // "Player 1" или "Player 2"
 
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -446,8 +448,7 @@
         const SUIT_RANKS = { '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
 
         window.updatePlayersCount = function(val) {
-            durakSettings.players = parseInt(val);
-            document.getElementById('players-count-val').innerText = val;
+            durakSettings.players = 2; // Жестко 2 игрока для стабильности
         };
 
         window.setParam = function(element, category, value) {
@@ -502,7 +503,7 @@
             const fontSize = isSmall ? '11px' : '12px';
 
             return `
-                <div class="playing-card ${colorClass} selectable" style="width:${width}; height:${height}; font-size:${fontSize};">
+                <div class="playing-card ${colorClass}" style="width:${width}; height:${height}; font-size:${fontSize};">
                     <div class="card-top-left"><span>${card.rank}</span><span>${card.suit}</span></div>
                     <div class="card-center-suit">${card.suit}</div>
                     <div class="card-bottom-right"><span>${card.rank}</span><span>${card.suit}</span></div>
@@ -510,18 +511,23 @@
             `;
         }
 
+        // Создаем комнату -> Назначаем создателя как "Player 1"
         window.createDurakRoom = async function() {
             durakSettings.bet = document.getElementById('durak-bet').value || 100;
             document.getElementById('durak-settings-modal').style.display = 'none';
             
             const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
             currentRoomCode = randomCode;
+            myAssignedRole = "Player 1";
 
             const roomData = {
                 code: randomCode,
                 settings: durakSettings,
                 status: 'lobby',
-                players: [ { name: myName, photo: photoUrl, cards: [] } ],
+                players: {
+                    "Player 1": { realName: myName, photo: photoUrl, cards: [] },
+                    "Player 2": null
+                },
                 game: null
             };
 
@@ -532,6 +538,7 @@
             startRoomPolling(randomCode);
         };
 
+        // Вход по коду -> Назначаем входящего как "Player 2"
         window.joinRoomByCode = async function() {
             const code = document.getElementById('room-code-input').value.trim();
             if (code.length !== 4) { alert("Введите 4 цифры кода!"); return; }
@@ -541,16 +548,19 @@
             const roomData = await res.json();
             if (!roomData) { alert("Стол не найден!"); return; }
 
-            let players = roomData.players || [];
-            if (players.length >= roomData.settings.players) { alert("Стол уже полон!"); return; }
-
-            // Проверяем, не зашел ли уже этот игрок
-            if (!players.some(p => p.name === myName)) {
-                players.push({ name: myName, photo: photoUrl, cards: [] });
-                roomData.players = players;
+            if (roomData.players["Player 1"] && roomData.players["Player 1"].realName === myName) {
+                myAssignedRole = "Player 1";
+            } else if (roomData.players["Player 2"] && roomData.players["Player 2"].realName === myName) {
+                myAssignedRole = "Player 2";
+            } else if (!roomData.players["Player 2"]) {
+                myAssignedRole = "Player 2";
+                roomData.players["Player 2"] = { realName: myName, photo: photoUrl, cards: [] };
                 await fetch(`${DATABASE_URL}/rooms/${code}/players.json`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(players)
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData.players)
                 });
+            } else {
+                alert("Стол уже занят двумя игроками!");
+                return;
             }
 
             openLobbyUI(roomData);
@@ -559,25 +569,21 @@
 
         function openLobbyUI(roomData) {
             document.getElementById('room-header-text').innerText = `Стол: Код ${roomData.code}`;
-            let players = roomData.players || [];
-            let maxP = roomData.settings.players;
-            document.getElementById('room-params-info').innerText = `Ставка: ${roomData.settings.bet} | Игроков: ${players.length}/${maxP}`;
+            let p1 = roomData.players["Player 1"];
+            let p2 = roomData.players["Player 2"];
+            let count = (p1 ? 1 : 0) + (p2 ? 1 : 0);
+            
+            document.getElementById('room-params-info').innerText = `Ставка: ${roomData.settings.bet} | Игроков: ${count}/2`;
             
             const container = document.getElementById('lobby-slots-container');
-            container.innerHTML = '';
-            
-            for (let i = 0; i < maxP; i++) {
-                let p = players[i];
-                if (p) {
-                    container.innerHTML += `
-                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px solid #2ecc71; display: flex; align-items: center; justify-content: center; overflow:hidden;">
-                            ${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;">` : '👤'}
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML += `<div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px dashed #bdc3c7; display: flex; align-items: center; justify-content: center; color: #aaa;">+</div>`;
-                }
-            }
+            container.innerHTML = `
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px solid ${p1 ? '#2ecc71' : '#bdc3c7'}; display: flex; align-items: center; justify-content: center; overflow:hidden;" title="Player 1">
+                    ${p1 && p1.photo ? `<img src="${p1.photo}" style="width:100%;height:100%;object-fit:cover;">` : 'P1'}
+                </div>
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: #15222e; border: 3px solid ${p2 ? '#2ecc71' : '#bdc3c7'}; display: flex; align-items: center; justify-content: center; overflow:hidden;" title="Player 2">
+                    ${p2 && p2.photo ? `<img src="${p2.photo}" style="width:100%;height:100%;object-fit:cover;">` : 'P2'}
+                </div>
+            `;
 
             document.getElementById('menu-screen').style.display = 'none';
             document.getElementById('lobby-screen').style.display = 'flex';
@@ -600,7 +606,7 @@
             }, 1200);
         }
 
-        // НАЧАЛО ИГРЫ — Раздаем по 6 карт Игроку 1 и Игроку 2
+        // НАЧАЛО ИГРЫ — Раздаем Player 1 и Player 2 по 6 карт
         window.startGameNow = async function() {
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             const room = await res.json();
@@ -608,19 +614,17 @@
             const deck = generateDeck(room.settings.deck);
             const trump = deck[deck.length - 1];
 
-            let players = room.players || [];
-            players.forEach(p => {
-                p.cards = deck.splice(0, 6); // Раздаем ровно по 6 карт
-            });
+            room.players["Player 1"].cards = deck.splice(0, 6);
+            room.players["Player 2"].cards = deck.splice(0, 6);
 
             room.status = 'playing';
             room.game = {
                 deck: deck,
                 trump: trump,
-                attackerIndex: 0,
-                defenderIndex: 1,
+                attacker: "Player 1",
+                defender: "Player 2",
                 tablePairs: [],
-                statusText: `Ходит ${players[0].name}`
+                statusText: `Ходит Player 1`
             };
 
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
@@ -646,26 +650,21 @@
                 trumpSlot.innerHTML = `<div style="font-size:11px; color:#ffeb3b;">Козырь: ${room.game.trump.suit}</div>`;
             }
 
-            let players = room.players || [];
-            let myIndex = players.findIndex(p => p.name === myName);
-            if (myIndex === -1) myIndex = 0; // Защита
+            let opponentRole = myAssignedRole === "Player 1" ? "Player 2" : "Player 1";
+            let oppData = room.players[opponentRole];
+            let myData = room.players[myAssignedRole];
 
-            // Оппоненты
+            // Оппонент сверху
             const oppContainer = document.getElementById('table-opponents-container');
-            oppContainer.innerHTML = '';
-            players.forEach((p, idx) => {
-                if (idx !== myIndex) {
-                    oppContainer.innerHTML += `
-                        <div class="opponent-seat" style="left: 50%; top: 5px; transform: translateX(-50%);">
-                            <div class="opp-avatar">
-                                ${p.photo ? `<img src="${p.photo}">` : '👤'}
-                                <div class="opp-cards-count">${p.cards ? p.cards.length : 0}</div>
-                            </div>
-                            <div class="opp-name">${p.name}</div>
-                        </div>
-                    `;
-                }
-            });
+            oppContainer.innerHTML = `
+                <div class="opponent-seat" style="left: 50%; top: 5px; transform: translateX(-50%);">
+                    <div class="opp-avatar">
+                        ${oppData && oppData.photo ? `<img src="${oppData.photo}">` : '👤'}
+                        <div class="opp-cards-count">${oppData && oppData.cards ? oppData.cards.length : 0}</div>
+                    </div>
+                    <div class="opp-name">${opponentRole}</div>
+                </div>
+            `;
 
             // Карты на столе
             const battleArea = document.getElementById('battle-pairs-area');
@@ -682,24 +681,23 @@
             // Моя рука
             const handContainer = document.getElementById('player-hand-container');
             handContainer.innerHTML = '';
-            let myData = players[myIndex];
             if (myData && myData.cards) {
                 myData.cards.forEach(card => {
                     let cardWrap = document.createElement('div');
                     cardWrap.innerHTML = renderCardHTML(card);
                     let cardEl = cardWrap.firstChild;
-                    cardEl.onclick = () => onCardClick(card, myIndex);
+                    cardEl.onclick = () => onCardClick(card);
                     handContainer.appendChild(cardEl);
                 });
             }
 
-            let isAttacker = room.game.attackerIndex === myIndex;
-            let isDefender = room.game.defenderIndex === myIndex;
+            let isAttacker = room.game.attacker === myAssignedRole;
+            let isDefender = room.game.defender === myAssignedRole;
             
             if (isAttacker) {
-                document.getElementById('game-status-text').innerText = "Ваш ход (Вы нападаете)";
+                document.getElementById('game-status-text').innerText = `Ваш ход (${myAssignedRole} нападает)`;
             } else if (isDefender) {
-                document.getElementById('game-status-text').innerText = "Вы защищаетесь!";
+                document.getElementById('game-status-text').innerText = `Вы защищаетесь (${myAssignedRole})!`;
             } else {
                 document.getElementById('game-status-text').innerText = room.game.statusText;
             }
@@ -710,16 +708,16 @@
         }
 
         // Ход картой
-        async function onCardClick(card, myIndex) {
+        async function onCardClick(card) {
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             let room = await res.json();
             
-            let isAttacker = room.game.attackerIndex === myIndex;
-            let isDefender = room.game.defenderIndex === myIndex;
+            let isAttacker = room.game.attacker === myAssignedRole;
+            let isDefender = room.game.defender === myAssignedRole;
 
             if (!isAttacker && !isDefender) return;
 
-            let players = room.players;
+            let myData = room.players[myAssignedRole];
 
             if (isAttacker) {
                 let pairs = room.game.tablePairs || [];
@@ -735,7 +733,7 @@
                     }
                 }
 
-                players[myIndex].cards = players[myIndex].cards.filter(c => c.id !== card.id);
+                myData.cards = myData.cards.filter(c => c.id !== card.id);
                 pairs.push({ attack: card, defend: null });
                 room.game.tablePairs = pairs;
                 room.game.statusText = `Ожидание ответа...`;
@@ -759,73 +757,64 @@
                     return;
                 }
 
-                players[myIndex].cards = players[myIndex].cards.filter(c => c.id !== card.id);
+                myData.cards = myData.cards.filter(c => c.id !== card.id);
                 unbeatPair.defend = card;
                 room.game.statusText = `Карта отбита!`;
             }
 
-            room.players = players;
+            room.players[myAssignedRole] = myData;
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
             });
         }
 
-        // БИТО — Поочередный добор до 6 карт
+        // БИТО
         async function actionBito() {
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             let room = await res.json();
             
             room.game.tablePairs = [];
             let deck = room.game.deck || [];
-            let players = room.players;
+            let p1 = room.players["Player 1"];
+            let p2 = room.players["Player 2"];
 
-            let attackerIdx = room.game.attackerIndex;
-            let defenderIdx = room.game.defenderIndex;
-
-            // 1. Атакующий добирает до 6 карт
-            while (players[attackerIdx].cards.length < 6 && deck.length > 0) {
-                players[attackerIdx].cards.push(deck.shift());
-            }
-
-            // 2. Защищающийся добирает до 6 карт
-            while (players[defenderIdx].cards.length < 6 && deck.length > 0) {
-                players[defenderIdx].cards.push(deck.shift());
-            }
+            // Нападающий добирает до 6
+            while (p1.cards.length < 6 && deck.length > 0) p1.cards.push(deck.shift());
+            // Защищающийся добирает до 6
+            while (p2.cards.length < 6 && deck.length > 0) p2.cards.push(deck.shift());
 
             room.game.deck = deck;
-            room.game.attackerIndex = defenderIdx;
-            room.game.defenderIndex = (defenderIdx + 1) % players.length;
-            room.game.statusText = `Бито! Ходит ${players[room.game.attackerIndex].name}`;
+            let prevDefender = room.game.defender;
+            room.game.defender = room.game.attacker;
+            room.game.attacker = prevDefender;
+            room.game.statusText = `Бито! Ходит ${room.game.attacker}`;
 
-            room.players = players;
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
             });
         }
 
-        // ВЗЯТЬ — Защищающийся забирает карты
+        // ВЗЯТЬ
         async function actionTake() {
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             let room = await res.json();
             
-            let players = room.players;
-            let defenderIdx = room.game.defenderIndex;
-            let attackerIdx = room.game.attackerIndex;
+            let defData = room.players[room.game.defender];
+            let attData = room.players[room.game.attacker];
 
             (room.game.tablePairs || []).forEach(p => {
-                players[defenderIdx].cards.push(p.attack);
-                if (p.defend) players[defenderIdx].cards.push(p.defend);
+                defData.cards.push(p.attack);
+                if (p.defend) defData.cards.push(p.defend);
             });
             room.game.tablePairs = [];
 
             let deck = room.game.deck || [];
-            while (players[attackerIdx].cards.length < 6 && deck.length > 0) {
-                players[attackerIdx].cards.push(deck.shift());
+            while (attData.cards.length < 6 && deck.length > 0) {
+                attData.cards.push(deck.shift());
             }
             room.game.deck = deck;
-            room.game.statusText = `${players[defenderIdx].name} забрал карты!`;
+            room.game.statusText = `${room.game.defender} забрал карты!`;
 
-            room.players = players;
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
             });
