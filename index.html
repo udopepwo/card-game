@@ -60,20 +60,22 @@
             display: none;
         }
 
+        /* Смещение элементов ниже для идеального центрирования */
         #menu-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 70vh;
-            gap: 12px;
+            min-height: 80vh;
+            gap: 15px;
+            padding-top: 20px;
         }
         .menu-container {
             width: 100%;
             max-width: 320px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
 
         button {
@@ -92,6 +94,16 @@
             padding: 15px; border-radius: 12px; width: 100%; box-sizing: border-box;
         }
 
+        /* Лобби со смещением вниз и фиксированной кнопкой выхода */
+        #lobby-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 85vh;
+            padding-top: 15px;
+            box-sizing: border-box;
+        }
         .card-table {
             background: #2e7d32;
             border: 3px solid #1b5e20;
@@ -99,6 +111,7 @@
             padding: 15px;
             margin: 10px auto;
             max-width: 400px;
+            width: 90%;
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
             position: relative;
         }
@@ -131,6 +144,16 @@
         }
         .ready-badge.not-ready { background: #d32f2f; color: white; }
         .ready-badge.ready { background: #4caf50; color: white; }
+
+        .lobby-bottom-area {
+            width: 100%;
+            max-width: 340px;
+            margin-top: auto; /* Прижимает блок к нижней части экрана */
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -219,13 +242,24 @@
         </div>
     </div>
 
-    <!-- Уведомления -->
+    <!-- Уведомления / Колокольчик -->
     <div id="notifications-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" id="close-notifications">✕</button>
             <h3 style="color:#ffeb3b; margin-top:0;">🔔 Уведомления</h3>
             <div id="notifications-container" style="max-height: 200px; overflow-y: auto; text-align: left; font-size: 13px; display:flex; flex-direction:column; gap:8px;">
                 <div style="color:#aaa; text-align:center; margin-top:20px;">Нет новых уведомлений</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Приглашение друзей в комнату -->
+    <div id="invite-friends-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" id="close-invite-modal">✕</button>
+            <h3 style="color:#ffeb3b; margin-top:0;">Пригласить в комнату</h3>
+            <div id="invite-friends-container" style="max-height: 200px; overflow-y: auto; text-align: left; font-size: 13px; display:flex; flex-direction:column; gap:8px;">
+                <div style="color:#aaa; text-align:center; margin-top:20px;">У вас пока нет друзей</div>
             </div>
         </div>
     </div>
@@ -269,21 +303,20 @@
                     <div class="ready-badge not-ready" id="badge-0">✕</div>
                 </div>
                 <div class="player-slot" id="slot-1" onclick="openPlayerProfile(1)">
-                    <span>👤</span>
+                    <span>+</span>
                     <div class="ready-badge not-ready" id="badge-1">✕</div>
                 </div>
             </div>
         </div>
 
-        <div class="section" style="max-width: 400px; margin: 0 auto;">
+        <div class="lobby-bottom-area">
             <div class="lobby-controls" style="display:flex; gap:8px; justify-content:center;">
                 <button class="mode-select-btn" id="open-mode-modal" style="background:#37474f; color:#fff; border-radius:10px; padding:12px;">⚙️ Крестики-нолики</button>
                 <button class="settings-arrow-btn" style="background:#37474f; color:#fff; border-radius:10px; padding:12px;">></button>
             </div>
-            <button id="start-btn" style="background: #e65100; width: 100%; margin-top: 10px;">Готов! (0/2)</button>
+            <button id="start-btn" style="background: #e65100; width: 100%;">Готов! (0/2)</button>
+            <button id="btn-leave-lobby" style="background: #d32f2f; font-size: 14px; padding: 12px; border-radius: 10px; width:100%;">Выйти в меню</button>
         </div>
-        <br>
-        <button id="btn-leave-lobby" style="background: #d32f2f; font-size: 13px; padding: 6px 14px;">Выйти в меню</button>
     </div>
 
     <!-- Игровой экран -->
@@ -321,7 +354,7 @@
         </div>
     </div>
 
-    <div class="footer-version">Версия: 2.5.2 (Beta)</div>
+    <div class="footer-version">Версия: 2.6.0 (Beta)</div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -348,6 +381,7 @@
             }
 
             const DATABASE_URL = "https://cardgame-adee9-default-rtdb.europe-west1.firebasedatabase.app";
+            const safeMyKey = myName.replace(/[.#$\/\[\]]/g, "_");
 
             let currentRoomCode = null;
             let hostName = null;
@@ -357,11 +391,13 @@
             let isHost = false;
             let isReady = false;
             let pollTimer = null;
+            let notifPollTimer = null;
             let myFriends = [];
             let myRequests = [];
 
             const profileModal = document.getElementById('profile-modal');
             const notificationsModal = document.getElementById('notifications-modal');
+            const inviteModal = document.getElementById('invite-friends-modal');
 
             document.getElementById('profile-btn').addEventListener('click', () => openProfile(myName, myUsername, photoUrl, true));
             document.getElementById('close-profile').addEventListener('click', () => profileModal.style.display = 'none');
@@ -371,28 +407,35 @@
                 renderNotifications();
             });
             document.getElementById('close-notifications').addEventListener('click', () => notificationsModal.style.display = 'none');
+            document.getElementById('close-invite-modal').addEventListener('click', () => inviteModal.style.display = 'none');
 
-            // Безопасный ключ для базы (без точек и спецсимволов)
-            const safeMyKey = myName.replace(/[.#$\/\[\]]/g, "_");
+            // Автоматическая проверка уведомлений в реальном времени (каждые 2 секунды)
+            function startNotificationListener() {
+                if (notifPollTimer) clearInterval(notifPollTimer);
+                notifPollTimer = setInterval(async () => {
+                    try {
+                        const [friendRes, reqRes] = await Promise.all([
+                            fetch(`${DATABASE_URL}/users/${safeMyKey}/friends.json`),
+                            fetch(`${DATABASE_URL}/users/${safeMyKey}/requests.json`)
+                        ]);
+                        
+                        const fData = await friendRes.json();
+                        if (fData) {
+                            // Уникализируем список друзей, чтобы не было дублей
+                            myFriends = Array.from(new Set(Object.values(fData)));
+                        }
 
-            // Слушаем заявки и друзей через Firebase в реальном времени
-            async function initUserCloudData() {
-                try {
-                    // Загрузка друзей
-                    const friendRes = await fetch(`${DATABASE_URL}/users/${safeMyKey}/friends.json`);
-                    const fData = await friendRes.json();
-                    if (fData) myFriends = Object.values(fData);
-
-                    // Загрузка входящих заявок
-                    const reqRes = await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests.json`);
-                    const rData = await reqRes.json();
-                    if (rData) {
-                        myRequests = Object.keys(rData).map(k => ({ id: k, from: rData[k].from }));
-                    }
-                    updateBellBadge();
-                } catch(e) {}
+                        const rData = await reqRes.json();
+                        if (rData) {
+                            myRequests = Object.keys(rData).map(k => ({ id: k, ...rData[k] }));
+                        } else {
+                            myRequests = [];
+                        }
+                        updateBellBadge();
+                    } catch(e) {}
+                }, 2000);
             }
-            initUserCloudData();
+            startNotificationListener();
 
             function updateBellBadge() {
                 const badge = document.getElementById('bell-badge');
@@ -409,6 +452,9 @@
                     openProfile(hostName, hostName === myName ? myUsername : "@user", hostPhoto, hostName === myName);
                 } else if (slotIndex === 1 && guestName) {
                     openProfile(guestName, guestName === myName ? myUsername : "@user", guestPhoto, guestName === myName);
+                } else if (slotIndex === 1 && !guestName && isHost) {
+                    inviteModal.style.display = 'flex';
+                    renderInviteFriendsList();
                 }
             };
 
@@ -442,7 +488,7 @@
                     await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ from: myName })
+                        body: JSON.stringify({ type: 'friend', from: myName })
                     });
                     alert("Запрос в друзья успешно отправлен игроку " + targetName + "!");
                     document.getElementById('friend-action-container').style.display = 'none';
@@ -455,7 +501,7 @@
                 try {
                     const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_");
                     
-                    // Добавляем друг другу в друзья через Firebase
+                    // Добавляем друг другу в друзья (с защитой от дублей)
                     await fetch(`${DATABASE_URL}/users/${safeMyKey}/friends.json`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(friendName)
                     });
@@ -466,7 +512,7 @@
                     // Удаляем запрос
                     await fetch(`${DATABASE_URL}/users/${safeMyKey}/requests/${reqId}.json`, { method: 'DELETE' });
 
-                    myFriends.push(friendName);
+                    if (!myFriends.includes(friendName)) myFriends.push(friendName);
                     myRequests = myRequests.filter(r => r.id !== reqId);
                     updateBellBadge();
                     renderNotifications();
@@ -476,16 +522,62 @@
                 }
             };
 
+            window.inviteFriendToRoom = async function(friendName) {
+                const safeTargetKey = friendName.replace(/[.#$\/\[\]]/g, "_");
+                try {
+                    await fetch(`${DATABASE_URL}/users/${safeTargetKey}/requests.json`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'room', from: myName, roomCode: currentRoomCode })
+                    });
+                    alert("Приглашение в комнату отправлено другу " + friendName + "!");
+                    inviteModal.style.display = 'none';
+                } catch(e) {
+                    alert("Ошибка отправки приглашения.");
+                }
+            };
+
+            window.joinInvitedRoom = function(roomCode) {
+                notificationsModal.style.display = 'none';
+                document.getElementById('room-code-input').value = roomCode;
+                joinRoom();
+            };
+
             function renderNotifications() {
                 const container = document.getElementById('notifications-container');
                 if (myRequests.length === 0) {
                     container.innerHTML = '<div style="color:#aaa; text-align:center; margin-top:20px;">Нет новых уведомлений</div>';
                     return;
                 }
-                container.innerHTML = myRequests.map(r => `
-                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>👤 <b>${r.from}</b> хочет добавить вас в друзья</div>
-                        <button onclick="acceptFriendRequest('${r.id}', '${r.from}')" style="padding:6px 12px; font-size:12px; background:#4caf50;">Принять</button>
+                container.innerHTML = myRequests.map(r => {
+                    if (r.type === 'room') {
+                        return `
+                            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>🎮 <b>${r.from}</b> зовет вас в комнату (${r.roomCode})!</div>
+                                <button onclick="joinInvitedRoom('${r.roomCode}')" style="padding:6px 12px; font-size:12px; background:#4caf50;">Войти</button>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>👤 <b>${r.from}</b> хочет добавить вас в друзья</div>
+                                <button onclick="acceptFriendRequest('${r.id}', '${r.from}')" style="padding:6px 12px; font-size:12px; background:#4caf50;">Принять</button>
+                            </div>
+                        `;
+                    }
+                }).join('');
+            }
+
+            function renderInviteFriendsList() {
+                const container = document.getElementById('invite-friends-container');
+                if (myFriends.length === 0) {
+                    container.innerHTML = '<div style="color:#aaa; text-align:center; margin-top:20px;">У вас пока нет друзей</div>';
+                    return;
+                }
+                container.innerHTML = myFriends.map(f => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:8px;">
+                        <span>👤 ${f}</span>
+                        <button onclick="inviteFriendToRoom('${f}')" style="padding:4px 10px; font-size:11px; background:#2481cc;">Позвать</button>
                     </div>
                 `).join('');
             }
@@ -501,13 +593,11 @@
                 document.getElementById('menu-screen').style.display = 'none';
                 document.getElementById('lobby-screen').style.display = 'none';
                 document.getElementById('game-screen').style.display = 'none';
-                document.getElementById('chat-toggle-btn').style.display = 'none';
 
                 if (screenId === 'menu-screen') {
                     document.getElementById('menu-screen').style.display = 'flex';
                 } else {
                     document.getElementById(screenId).style.display = 'block';
-                    document.getElementById('chat-toggle-btn').style.display = 'flex';
                 }
             }
 
@@ -620,7 +710,7 @@
                     slot1.innerHTML = `${guestPhoto ? `<img src="${guestPhoto}">` : '<span>👤</span>'}<div class="ready-badge ${d.ready && d.ready[guestName] ? 'ready' : 'not-ready'}">${d.ready && d.ready[guestName] ? '✓' : '✕'}</div>`;
                 } else {
                     slot1.classList.remove('filled');
-                    slot1.innerHTML = `<span>👤</span><div class="ready-badge not-ready">✕</div>`;
+                    slot1.innerHTML = `<span>+</span><div class="ready-badge not-ready">✕</div>`;
                 }
             }
 
