@@ -239,28 +239,30 @@
 
         .game-actions-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 4px; z-index: 80; }
 
-        /* ОБЛАСТЬ КАРТ В РУКЕ С ПОЛЗУНКОМ ПРОКРУТКИ */
+        /* КАЧЕСТВЕННЫЙ И ПЛАВНЫЙ ПОЛЗУНОК НАД КАРТАМИ */
         .player-hand-area {
             width: 100%; background: rgba(0, 0, 0, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.15);
             display: flex; flex-direction: column; align-items: center; padding: 6px 5px 15px 5px; position: relative; z-index: 90;
         }
         
         .hand-scroll-slider {
-            width: 85%; max-width: 320px; height: 6px; background: rgba(255,255,255,0.2);
-            border-radius: 3px; margin-bottom: 6px; outline: none; -webkit-appearance: none; cursor: pointer;
+            width: 85%; max-width: 320px; height: 8px; background: rgba(255,255,255,0.25);
+            border-radius: 4px; margin-bottom: 8px; outline: none; -webkit-appearance: none; cursor: pointer;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); transition: background 0.2s ease;
         }
         .hand-scroll-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 35px; height: 10px; background: #f1c40f; border-radius: 5px; cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            -webkit-appearance: none; width: 45px; height: 12px; background: #f1c40f; border-radius: 6px; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.4);
         }
 
         .hand-cards-scroll-container {
-            width: 100%; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; display: flex; justify-content: center; padding: 4px 0;
-            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+            width: 100%; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; display: flex; justify-content: flex-start; padding: 4px 10px;
+            scroll-behavior: auto; /* убираем лаг задержки плавного скролла при программном изменении */
+            -webkit-overflow-scrolling: touch;
         }
         .hand-cards-scroll-container::-webkit-scrollbar { display: none; }
         
-        .hand-cards-flex { display: flex; gap: 8px; justify-content: center; align-items: center; min-width: max-content; padding: 0 10px; }
+        .hand-cards-flex { display: flex; gap: 8px; justify-content: flex-start; align-items: center; min-width: max-content; margin: 0 auto; }
 
         .playing-card {
             width: 62px; height: 88px; background: #fdfdfd !important; border-radius: 8px;
@@ -371,7 +373,10 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="font-size: 16px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 16.1.0 (Ultra Smooth)</div>
+            <div style="font-size: 15px; font-weight: bold; color: #ffeb3b; background: rgba(241, 196, 15, 0.15); padding: 12px; border-radius: 10px; border: 1px solid rgba(241, 196, 15, 0.3); margin: 15px 0;">
+                Вы получите Катю Липко в следующем обновлении
+            </div>
+            <div style="font-size: 13px; color: #2ecc71; margin-top: 10px;">Версия 16.2.0 (Ultra Smooth Slider)</div>
         </div>
     </div>
 
@@ -475,7 +480,7 @@
         </div>
 
         <div class="player-hand-area">
-            <!-- ПОЛЗУНОК ПРОКРУТКИ НАД КАРТАМИ -->
+            <!-- КАЧЕСТВЕННЫЙ ПОЛЗУНОК ПРОКРУТКИ -->
             <input type="range" id="hand-slider" class="hand-scroll-slider" min="0" max="100" value="0" oninput="onHandSliderScroll(this)">
             <div class="hand-cards-scroll-container" id="hand-scroll-box" onscroll="onHandScrollSync(this)">
                 <div class="hand-cards-flex" id="player-hand-container"></div>
@@ -500,6 +505,7 @@
         let photoUrl = null;
         let myRole = null; 
         let lastRenderStateHash = ""; 
+        let isSyncingScroll = false; // Защита от зацикливания и лагов прокрутки
 
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -910,15 +916,20 @@
             document.getElementById('btn-perevod').style.display = canPerevod ? 'inline-block' : 'none';
         }
 
-        // Плавная синхронизация слайдера и скролла руки
+        // БЕЗУПРЕЧНО ПЛАВНЫЙ И КАЧЕСТВЕННЫЙ СИНХРОННЫЙ СКРОЛЛ
         window.onHandSliderScroll = function(slider) {
             const scrollBox = document.getElementById('hand-scroll-box');
             if (!scrollBox) return;
             const maxScroll = scrollBox.scrollWidth - scrollBox.clientWidth;
+            if (maxScroll <= 0) return;
+            
+            isSyncingScroll = true;
             scrollBox.scrollLeft = (slider.value / 100) * maxScroll;
+            setTimeout(() => { isSyncingScroll = false; }, 50);
         };
 
         window.onHandScrollSync = function(scrollBox) {
+            if (isSyncingScroll) return;
             const slider = document.getElementById('hand-slider');
             if (!slider) return;
             const maxScroll = scrollBox.scrollWidth - scrollBox.clientWidth;
