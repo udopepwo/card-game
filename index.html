@@ -83,7 +83,7 @@
             border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
             cursor: pointer; font-size: 16px; font-weight: 500; color: #ffffff; text-align: left;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            transition: transform 0.1s ease, background-color 0.1s ease;
+            transition: transform 0.12s ease, background-color 0.12s ease;
         }
         .menu-row:active { background-color: #1f2e3d; transform: scale(0.98); }
 
@@ -99,7 +99,7 @@
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 15px;
-            animation: fadeIn 0.12s ease;
+            animation: fadeIn 0.15s cubic-bezier(0.25, 1, 0.5, 1);
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -108,7 +108,7 @@
             border: 3px solid #34495e; border-radius: 18px; width: 100%; max-width: 400px;
             padding: 20px; position: relative; text-align: center;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;
-            animation: scaleUp 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: scaleUp 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -124,7 +124,7 @@
             flex: 1; min-width: 45px; padding: 8px; background: #1e3a29;
             border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff;
             font-size: 13px; cursor: pointer; text-align: center; font-weight: bold;
-            transition: all 0.1s ease;
+            transition: all 0.12s ease;
         }
         .param-btn.selected {
             background: #ffffff !important; color: #16222f !important; border-color: #ffffff !important;
@@ -134,7 +134,7 @@
         button {
             color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 12px;
             cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto; z-index: 30;
-            transition: transform 0.1s ease, opacity 0.1s ease;
+            transition: transform 0.12s ease, opacity 0.12s ease;
         }
         button:active { transform: scale(0.96); opacity: 0.85; }
         .btn-green { background: #27ae60; border: 1px solid rgba(255, 255, 255, 0.2); }
@@ -174,20 +174,32 @@
             margin-top: 40px;
         }
 
-        .table-opponents { position: relative; width: 100%; height: 75px; margin-top: 5px; display: flex; justify-content: center; gap: 15px; }
-        .opponent-seat { display: flex; flex-direction: column; align-items: center; }
+        /* Соперники и четкий показ количества карт */
+        .table-opponents { position: relative; width: 100%; height: 85px; margin-top: 5px; display: flex; justify-content: center; gap: 20px; }
+        .opponent-seat { display: flex; flex-direction: column; align-items: center; position: relative; }
+        
         .opp-avatar {
-            width: 40px; height: 40px; border-radius: 50%; background: #15222e;
+            width: 44px; height: 44px; border-radius: 50%; background: #15222e;
             border: 2px solid #2ecc71; display: flex; align-items: center; justify-content: center;
             overflow: hidden; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative;
         }
         .opp-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .opp-name { font-size: 10px; background: rgba(0,0,0,0.6); padding: 2px 5px; border-radius: 5px; margin-top: 2px; }
         
-        .opp-cards-preview { display: flex; gap: 2px; margin-top: 3px; justify-content: center; }
+        /* Четкий крупный бейдж количества карт соперника */
+        .opp-card-badge {
+            position: absolute; top: -6px; right: -8px; background: #e74c3c; color: white;
+            font-size: 11px; font-weight: 900; width: 22px; height: 22px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.6); z-index: 10;
+        }
+
+        .opp-name { font-size: 11px; background: rgba(0,0,0,0.65); padding: 2px 6px; border-radius: 6px; margin-top: 3px; font-weight: 500; }
+        
+        .opp-cards-preview { display: flex; gap: 3px; margin-top: 4px; justify-content: center; height: 26px; align-items: center; }
         .opp-card-back {
             width: 16px; height: 24px; background: #1b2631; border: 1px solid #fff; border-radius: 3px;
             background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 4px 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .table-center-felt {
@@ -197,20 +209,25 @@
         }
         
         .battle-pairs-container {
-            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 90%; min-height: 110px; align-items: center;
+            display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; max-width: 90%; min-height: 120px; align-items: center;
             margin-left: 65px;
         }
+        
+        /* ИСПРАВЛЕНИЕ: карточки на столе выстроены так, чтобы атакующая была четко видна сверху-слева, а отбивающая смещена вниз-вправо */
         .battle-pair { 
-            position: relative; width: 62px; height: 88px; animation: popIn 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            border: 2px dashed transparent; border-radius: 8px; transition: border-color 0.1s ease;
+            position: relative; width: 68px; height: 96px; animation: popIn 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 2px dashed transparent; border-radius: 8px; transition: border-color 0.12s ease;
         }
         .battle-pair.highlight-target {
             border-color: #f1c40f; background: rgba(241, 196, 15, 0.15); box-shadow: 0 0 12px rgba(241, 196, 15, 0.6);
         }
         @keyframes popIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        .battle-card-attack { position: absolute; top: 0; left: 0; z-index: 1; will-change: transform; }
-        .battle-card-defend { position: absolute; top: 12px; left: 12px; z-index: 2; will-change: transform; }
+        /* Атакующая карта (сверху-слева) */
+        .battle-card-attack { position: absolute; top: 0px; left: 0px; z-index: 1; will-change: transform; }
+        
+        /* Отбивающая карта (снизу-справа, смещена так, чтобы атакующая отлично просматривалась) */
+        .battle-card-defend { position: absolute; top: 16px; left: 18px; z-index: 2; will-change: transform; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
 
         @keyframes flyToBito {
             0% { transform: scale(1) translate(0, 0); opacity: 1; }
@@ -273,8 +290,8 @@
         .hand-cards-flex { display: flex; gap: 8px; justify-content: flex-start; align-items: center; min-width: max-content; margin: 0 auto; overflow: visible; }
 
         .playing-card {
-            width: 62px; height: 88px; background: #fdfdfd !important; border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            width: 64px; height: 90px; background: #fdfdfd !important; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: flex; flex-direction: column;
             justify-content: space-between; padding: 5px; font-weight: bold; font-size: 13px;
             cursor: grab; transition: transform 0.08s ease, box-shadow 0.08s ease; position: relative; flex-shrink: 0; border: 1px solid #dcdde1;
             will-change: transform;
@@ -409,7 +426,7 @@
                 </div>
             </div>
 
-            <div style="font-size: 13px; color: #2ecc71; margin-top: 15px;">Версия 16.4.0 (Anti-Double Tap & Rainbow)</div>
+            <div style="font-size: 13px; color: #2ecc71; margin-top: 15px;">Версия 16.5.0 (Card Offset & Perfect Opponent Cards)</div>
         </div>
     </div>
 
@@ -538,7 +555,7 @@
         let myRole = null; 
         let lastRenderStateHash = ""; 
         let isSyncingScroll = false;
-        let isActionInProgress = false; // Защита от дублирования карт
+        let isActionInProgress = false;
 
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -840,7 +857,8 @@
                 attacker: room.game.attacker,
                 defender: room.game.defender,
                 status: room.game.statusText,
-                statusGame: room.status
+                statusGame: room.status,
+                oppCards: room.game.playersList.map(p => room[p].cards ? room[p].cards.length : 0)
             });
 
             if (stateHash === lastRenderStateHash) return;
@@ -869,6 +887,7 @@
                 trumpSlot.innerHTML = `<div style="font-size:11px; color:#ffeb3b;">Козырь: ${room.game.trump.suit}</div>`;
             }
 
+            // Отрисовка соперников с надежным показом точного количества карт
             const oppContainer = document.getElementById('table-opponents-container');
             oppContainer.innerHTML = '';
             room.game.playersList.forEach(pKey => {
@@ -887,7 +906,7 @@
                 seatDiv.innerHTML = `
                     <div class="opp-avatar">
                         ${pData.photo ? `<img src="${pData.photo}">` : '👤'}
-                        <div style="position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; font-size: 9px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #fff;">${cardsCount}</div>
+                        <div class="opp-card-badge">${cardsCount}</div>
                     </div>
                     <div class="opp-name">${pData.name}</div>
                     <div class="opp-cards-preview">${backsHtml}</div>
