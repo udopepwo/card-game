@@ -24,6 +24,7 @@
             overflow: hidden;
             height: 100vh;
             user-select: none;
+            -webkit-font-smoothing: antialiased;
         }
 
         .menu-container {
@@ -98,7 +99,7 @@
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 15px;
-            animation: fadeIn 0.2s ease;
+            animation: fadeIn 0.15s ease;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -107,9 +108,9 @@
             border: 3px solid #34495e; border-radius: 18px; width: 100%; max-width: 400px;
             padding: 20px; position: relative; text-align: center;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;
-            animation: scaleUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: scaleUp 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .modal-close {
             position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;
@@ -123,7 +124,7 @@
             flex: 1; min-width: 45px; padding: 8px; background: #1e3a29;
             border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff;
             font-size: 13px; cursor: pointer; text-align: center; font-weight: bold;
-            transition: all 0.15s ease;
+            transition: all 0.1s ease;
         }
         .param-btn.selected {
             background: #ffffff !important; color: #16222f !important; border-color: #ffffff !important;
@@ -182,92 +183,112 @@
         
         .opp-cards-preview { display: flex; gap: 2px; margin-top: 3px; justify-content: center; }
         .opp-card-back {
-            width: 18px; height: 26px; background: #1b2631; border: 1px solid #fff; border-radius: 3px;
+            width: 16px; height: 24px; background: #1b2631; border: 1px solid #fff; border-radius: 3px;
             background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 4px 4px;
         }
 
         .table-center-felt {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: relative; margin: 5px 0;
+            position: relative; margin: 2px 0;
         }
         
-        /* Увеличенный контейнер для пар на столе с учетом увеличенных карт */
         .battle-pairs-container {
-            display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 95%; min-height: 140px; align-items: center;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 95%; min-height: 110px; align-items: center;
         }
         .battle-pair { 
-            position: relative; width: 88px; height: 124px; animation: popIn 0.2s ease; 
-            border: 2px dashed transparent; border-radius: 10px; transition: border-color 0.2s ease;
+            position: relative; width: 62px; height: 88px; animation: popIn 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 2px dashed transparent; border-radius: 8px; transition: border-color 0.1s ease;
         }
         .battle-pair.highlight-target {
-            border-color: #f1c40f; background: rgba(241, 196, 15, 0.15); box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
+            border-color: #f1c40f; background: rgba(241, 196, 15, 0.15); box-shadow: 0 0 12px rgba(241, 196, 15, 0.6);
         }
-        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        .battle-card-attack { position: absolute; top: 0; left: 0; z-index: 1; }
-        .battle-card-defend { position: absolute; top: 18px; left: 18px; z-index: 2; }
+        .battle-card-attack { position: absolute; top: 0; left: 0; z-index: 1; will-change: transform; }
+        .battle-card-defend { position: absolute; top: 12px; left: 12px; z-index: 2; will-change: transform; }
 
         @keyframes flyToBito {
             0% { transform: scale(1) translate(0, 0); opacity: 1; }
-            100% { transform: scale(0.3) translate(0, -250px); opacity: 0; }
+            100% { transform: scale(0.3) translate(0, -220px); opacity: 0; }
         }
-        .anim-bito { animation: flyToBito 0.4s ease forwards; z-index: 150; }
+        .anim-bito { animation: flyToBito 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 150; }
 
         @keyframes flyToTake {
             0% { transform: scale(1) translate(0, 0); opacity: 1; }
-            100% { transform: scale(0.3) translate(0, 250px); opacity: 0; }
+            100% { transform: scale(0.3) translate(0, 220px); opacity: 0; }
         }
-        .anim-take { animation: flyToTake 0.4s ease forwards; z-index: 150; }
+        .anim-take { animation: flyToTake 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 150; }
 
         .deck-zone {
-            position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+            position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
             display: flex; flex-direction: column; align-items: center; gap: 4px;
         }
-        /* Увеличен размер колоды и слота козыря пропорционально картам */
-        .deck-stack-wrapper { position: relative; width: 88px; height: 124px; }
+        .deck-stack-wrapper { position: relative; width: 60px; height: 84px; }
         .deck-stack {
-            width: 82px; height: 116px; background: #1a2733; border: 2px solid #fff; border-radius: 10px;
+            width: 56px; height: 78px; background: #1a2733; border: 2px solid #fff; border-radius: 8px;
             position: absolute; top:0; left:0; z-index: 2; box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 6px 6px;
         }
-        .trump-card-slot { position: absolute; top: 0; left: 28px; transform: rotate(90deg); z-index: 1; }
+        .trump-card-slot { position: absolute; top: 0; left: 18px; transform: rotate(90deg); z-index: 1; }
 
         .game-status-banner {
-            background: rgba(0,0,0,0.65); padding: 8px 16px; border-radius: 10px;
-            font-size: 13px; font-weight: bold; color: #ffeb3b; margin-bottom: 8px;
+            background: rgba(0,0,0,0.65); padding: 6px 14px; border-radius: 10px;
+            font-size: 12px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.4); border: 1px solid rgba(255,235,59,0.3);
         }
 
-        .game-actions-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 8px; z-index: 80; }
+        .game-actions-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 4px; z-index: 80; }
 
+        /* ОБЛАСТЬ КАРТ В РУКЕ С ПОЛЗУНКОМ ПРОКРУТКИ */
         .player-hand-area {
-            width: 100%; min-height: 155px; padding: 10px 5px 25px 5px;
-            background: rgba(0, 0, 0, 0.35); border-top: 1px solid rgba(255, 255, 255, 0.15);
-            display: flex; justify-content: center; align-items: center; overflow-x: auto; position: relative; z-index: 90;
+            width: 100%; background: rgba(0, 0, 0, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex; flex-direction: column; align-items: center; padding: 6px 5px 15px 5px; position: relative; z-index: 90;
         }
-        .hand-cards-flex { display: flex; gap: 12px; justify-content: center; align-items: center; min-width: max-content; }
+        
+        .hand-scroll-slider {
+            width: 85%; max-width: 320px; height: 6px; background: rgba(255,255,255,0.2);
+            border-radius: 3px; margin-bottom: 6px; outline: none; -webkit-appearance: none; cursor: pointer;
+        }
+        .hand-scroll-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 35px; height: 10px; background: #f1c40f; border-radius: 5px; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
 
-        /* УВЕЛИЧЕННЫЕ КАРТЫ С СОХРАНЕНИЕМ ВСЕХ ЦВЕТОВ И СТИЛЕЙ */
+        .hand-cards-scroll-container {
+            width: 100%; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; display: flex; justify-content: center; padding: 4px 0;
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+        }
+        .hand-cards-scroll-container::-webkit-scrollbar { display: none; }
+        
+        .hand-cards-flex { display: flex; gap: 8px; justify-content: center; align-items: center; min-width: max-content; padding: 0 10px; }
+
         .playing-card {
-            width: 88px; height: 124px; background: #fdfdfd !important; border-radius: 10px;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.6); display: flex; flex-direction: column;
-            justify-content: space-between; padding: 8px; font-weight: bold; font-size: 16px;
-            cursor: grab; transition: transform 0.15s ease, box-shadow 0.15s ease; position: relative; flex-shrink: 0; border: 1px solid #dcdde1;
+            width: 62px; height: 88px; background: #fdfdfd !important; border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            justify-content: space-between; padding: 5px; font-weight: bold; font-size: 13px;
+            cursor: grab; transition: transform 0.1s ease, box-shadow 0.1s ease; position: relative; flex-shrink: 0; border: 1px solid #dcdde1;
+            will-change: transform;
         }
         .playing-card:active { cursor: grabbing; }
         .playing-card.dragging {
-            opacity: 0.85; transform: scale(1.15); z-index: 1000; position: fixed; pointer-events: none;
-            box-shadow: 0 18px 35px rgba(0,0,0,0.8);
+            opacity: 0.9; transform: scale(1.12); z-index: 1000; position: fixed; pointer-events: none;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8);
         }
         
-        .card-hearts { color: #ff4757 !important; }   /* Червы: Ярко-красный */
-        .card-diams { color: #ff6b81 !important; }    /* Бубны: Кораллово-розовый */
-        .card-spades { color: #2f3542 !important; }   /* Пики: Угольно-черный графит */
-        .card-clubs { color: #3742fa !important; }    /* Трефы: Глубокий синий */
+        /* ЦВЕТА МАСТЕЙ ПО ТЗ: крести — зеленый, пика — черный, чирва — красный, буба — синий */
+        .card-clubs { color: #27ae60 !important; }    /* Крести: Зеленый */
+        .card-spades { color: #1e1e1e !important; }   /* Пика: Черный */
+        .card-hearts { color: #ff4757 !important; }   /* Чирва: Красный */
+        .card-diams { color: #2980b9 !important; }    /* Буба: Синий */
         
-        .card-top-left { display: flex; flex-direction: column; align-items: center; line-height: 1; font-size: 15px; }
-        .card-center-suit { font-size: 38px; margin: auto; }
-        .card-bottom-right { display: flex; flex-direction: column; align-items: center; line-height: 1; transform: rotate(180deg); font-size: 15px; }
+        .card-top-left { display: flex; flex-direction: column; align-items: center; line-height: 1; font-size: 12px; }
+        .card-center-suit { font-size: 30px; margin: auto; }
+        .card-bottom-right { display: flex; flex-direction: column; align-items: center; line-height: 1; transform: rotate(180deg); font-size: 12px; }
+
+        #gameover-modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; padding: 15px;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
@@ -320,7 +341,7 @@
     <div id="profile-modal" class="modal-overlay">
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('profile-modal').style.display='none'">✕</button>
-            <div class="avatar-large" id="modal-avatar">👤</div>
+            <div class="avatar-large" id="modal-avatar" style="font-size: 50px; margin-bottom: 10px;">👤</div>
             <h3 id="modal-profile-name" style="margin: 5px 0 0 0; font-size: 18px; color: #2ecc71;">Игрок</h3>
             <div id="modal-profile-username" style="font-size: 12px; color: #bdc3c7;">@username</div>
         </div>
@@ -350,7 +371,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
-            <div style="font-size: 16px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 15.1.0 (Large Cards Edition)</div>
+            <div style="font-size: 16px; font-weight: bold; color: #2ecc71; margin-top: 15px;">Версия 16.1.0 (Ultra Smooth)</div>
         </div>
     </div>
 
@@ -454,7 +475,20 @@
         </div>
 
         <div class="player-hand-area">
-            <div class="hand-cards-flex" id="player-hand-container"></div>
+            <!-- ПОЛЗУНОК ПРОКРУТКИ НАД КАРТАМИ -->
+            <input type="range" id="hand-slider" class="hand-scroll-slider" min="0" max="100" value="0" oninput="onHandSliderScroll(this)">
+            <div class="hand-cards-scroll-container" id="hand-scroll-box" onscroll="onHandScrollSync(this)">
+                <div class="hand-cards-flex" id="player-hand-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА ПОБЕДЫ / ПРОИГРЫША -->
+    <div id="gameover-modal" class="modal-overlay">
+        <div class="modal-card" style="border: 4px solid #f1c40f;">
+            <h2 id="gameover-title" style="color: #f1c40f; margin-top:0; font-size: 24px;">🏆 Победа!</h2>
+            <p id="gameover-text" style="font-size: 15px; color: #eee; margin: 15px 0;">Вы заняли призовое место!</p>
+            <button class="btn-green" onclick="returnToMenu()" style="width: 100%; padding: 14px; font-size: 16px;">В меню</button>
         </div>
     </div>
 
@@ -544,11 +578,30 @@
             return deck;
         }
 
+        // СОРТИРОВКА: КОЗЫРИ ВСЕГДА СЛЕВА И НЕ ПЕРЕМЕЩАЮТСЯ
+        function sortPlayerCards(cards, trumpSuit) {
+            if (!cards) return [];
+            return cards.sort((a, b) => {
+                let aIsTrump = (a.suit === trumpSuit);
+                let bIsTrump = (b.suit === trumpSuit);
+
+                if (aIsTrump && !bIsTrump) return -1;
+                if (!aIsTrump && bIsTrump) return 1;
+
+                if (a.suit !== b.suit) {
+                    return a.suit.localeCompare(b.suit);
+                }
+                return a.val - b.val;
+            });
+        }
+
+        // ЦВЕТА МАСТЕЙ ПО ТЗ: крести — зеленый, пика — черный, чирва — красный, буба — синий
         function createCardElement(card) {
             let colorClass = 'card-spades';
-            if (card.suit === '♥') colorClass = 'card-hearts';
-            else if (card.suit === '♦') colorClass = 'card-diams';
-            else if (card.suit === '♣') colorClass = 'card-clubs';
+            if (card.suit === '♥') colorClass = 'card-hearts';       // Чирва: Красный
+            else if (card.suit === '♦') colorClass = 'card-diams';   // Буба: Синий
+            else if (card.suit === '♣') colorClass = 'card-clubs';   // Крести: Зеленый
+            else if (card.suit === '♠') colorClass = 'card-spades';  // Пика: Черный
 
             const cardDiv = document.createElement('div');
             cardDiv.className = `playing-card ${colorClass}`;
@@ -573,7 +626,7 @@
                 code: randomCode,
                 settings: durakSettings,
                 status: 'lobby',
-                p1: { name: myName, photo: photoUrl, cards: [] },
+                p1: { name: myName, photo: photoUrl, cards: [], finished: false, role: 'player' },
                 game: null
             };
             for (let i = 2; i <= maxPlayers; i++) {
@@ -612,7 +665,7 @@
                     let key = 'p' + i;
                     if (!roomData[key]) {
                         assignedRole = key;
-                        roomData[key] = { name: myName, photo: photoUrl, cards: [] };
+                        roomData[key] = { name: myName, photo: photoUrl, cards: [], finished: false, role: 'player' };
                         await fetch(`${DATABASE_URL}/rooms/${code}/${key}.json`, {
                             method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(roomData[key])
                         });
@@ -672,10 +725,12 @@
                     document.getElementById('lobby-screen').style.display = 'none';
                     document.getElementById('game-table-screen').style.display = 'flex';
                     renderGameTable(d);
+                } else if (d.status === 'finished') {
+                    renderGameTable(d);
                 } else {
                     openLobbyUI(d);
                 }
-            }, 1200);
+            }, 800);
         }
 
         window.startGameNow = async function() {
@@ -692,7 +747,8 @@
             const trump = deck[deck.length - 1]; 
 
             activePlayers.forEach(pKey => {
-                room[pKey].cards = deck.splice(0, 6);
+                room[pKey].cards = sortPlayerCards(deck.splice(0, 6), trump.suit);
+                room[pKey].finished = false;
             });
 
             room.status = 'playing';
@@ -713,6 +769,27 @@
             });
         };
 
+        function checkWinConditions(room) {
+            if (!room.game || room.status !== 'playing') return;
+            let players = room.game.playersList;
+            let deckEmpty = (!room.game.deck || room.game.deck.length === 0);
+
+            if (!deckEmpty) return;
+
+            let activeUnfinished = players.filter(pKey => {
+                let p = room[pKey];
+                return p && (!p.cards || p.cards.length > 0);
+            });
+
+            if (activeUnfinished.length <= 1) {
+                room.status = 'finished';
+                if (activeUnfinished.length === 1) {
+                    room.loser = activeUnfinished[0];
+                }
+                room.game.statusText = `Игра окончена!`;
+            }
+        }
+
         function renderGameTable(room) {
             let stateHash = JSON.stringify({
                 pairs: room.game.tablePairs,
@@ -720,11 +797,17 @@
                 myHand: room[myRole] ? room[myRole].cards : [],
                 attacker: room.game.attacker,
                 defender: room.game.defender,
-                status: room.game.statusText
+                status: room.game.statusText,
+                statusGame: room.status
             });
 
             if (stateHash === lastRenderStateHash) return;
             lastRenderStateHash = stateHash;
+
+            if (room.status === 'finished') {
+                showGameOverModal(room);
+                return;
+            }
 
             document.getElementById('table-room-code').innerText = `Стол #${room.code}`;
             document.getElementById('trump-info').innerText = `Козырь: ${room.game.trump.rank}${room.game.trump.suit}`;
@@ -795,6 +878,7 @@
             handContainer.innerHTML = '';
             let myData = room[myRole] || { cards: [] };
             if (myData.cards && myData.cards.length > 0) {
+                myData.cards = sortPlayerCards(myData.cards, room.game.trump.suit);
                 myData.cards.forEach(card => {
                     let cardEl = createCardElement(card);
                     cardEl.dataset.cardId = card.id;
@@ -825,6 +909,23 @@
             let canPerevod = isDefender && canPerevodMode && hasUnbeatenCards;
             document.getElementById('btn-perevod').style.display = canPerevod ? 'inline-block' : 'none';
         }
+
+        // Плавная синхронизация слайдера и скролла руки
+        window.onHandSliderScroll = function(slider) {
+            const scrollBox = document.getElementById('hand-scroll-box');
+            if (!scrollBox) return;
+            const maxScroll = scrollBox.scrollWidth - scrollBox.clientWidth;
+            scrollBox.scrollLeft = (slider.value / 100) * maxScroll;
+        };
+
+        window.onHandScrollSync = function(scrollBox) {
+            const slider = document.getElementById('hand-slider');
+            if (!slider) return;
+            const maxScroll = scrollBox.scrollWidth - scrollBox.clientWidth;
+            if (maxScroll > 0) {
+                slider.value = (scrollBox.scrollLeft / maxScroll) * 100;
+            }
+        };
 
         function initDragAndDrop(cardEl, card) {
             let startX, startY, initialX, initialY;
@@ -965,6 +1066,7 @@
                     targetPair.defend = card;
                     room.game.statusText = `Отбито!`;
                     
+                    checkWinConditions(room);
                     room[myRole] = myData;
                     lastRenderStateHash = "";
                     await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
@@ -1017,6 +1119,7 @@
                 }
             }
 
+            checkWinConditions(room);
             room[myRole] = myData;
             lastRenderStateHash = ""; 
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
@@ -1042,6 +1145,7 @@
                     while (room[pKey].cards.length < 6 && deck.length > 0) {
                         room[pKey].cards.push(deck.shift());
                     }
+                    room[pKey].cards = sortPlayerCards(room[pKey].cards, room.game.trump.suit);
                 });
 
                 room.game.deck = deck;
@@ -1050,12 +1154,13 @@
                 room.game.defender = players[(oldDefIdx + 1) % players.length];
                 room.game.statusText = `Бито! Ходит ${room[room.game.attacker].name}`;
 
+                checkWinConditions(room);
                 lastRenderStateHash = "";
                 await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
                 });
                 renderGameTable(room);
-            }, 380);
+            }, 250);
         }
 
         async function actionTake() {
@@ -1083,6 +1188,7 @@
                     while (room[pKey].cards.length < 6 && deck.length > 0) {
                         room[pKey].cards.push(deck.shift());
                     }
+                    room[pKey].cards = sortPlayerCards(room[pKey].cards, room.game.trump.suit);
                 });
 
                 room.game.deck = deck;
@@ -1091,12 +1197,13 @@
                 room.game.defender = players[(defIdx + 2) % players.length];
                 room.game.statusText = `${defData.name} забрал карты!`;
 
+                checkWinConditions(room);
                 lastRenderStateHash = "";
                 await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
                 });
                 renderGameTable(room);
-            }, 380);
+            }, 250);
         }
 
         async function actionPerevod() {
@@ -1121,6 +1228,7 @@
             room.game.defender = players[nextDefIdx];
             room.game.statusText = `Ход переведен! Отбивается ${room[room.game.defender].name}`;
 
+            checkWinConditions(room);
             room[myRole] = myData;
             lastRenderStateHash = "";
             await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
@@ -1128,6 +1236,28 @@
             });
             renderGameTable(room);
         }
+
+        function showGameOverModal(room) {
+            const modal = document.getElementById('gameover-modal');
+            const title = document.getElementById('gameover-title');
+            const text = document.getElementById('gameover-text');
+
+            if (room.loser === myRole) {
+                title.innerText = "❌ Поражение!";
+                title.style.color = "#e74c3c";
+                text.innerText = "Вы остались последним игроком с картами (Дурак)!";
+            } else {
+                title.innerText = "🏆 Победа!";
+                title.style.color = "#2ecc71";
+                text.innerText = "Поздравляем! Вы успешно избавились от всех карт!";
+            }
+            modal.style.display = 'flex';
+        }
+
+        window.returnToMenu = function() {
+            document.getElementById('gameover-modal').style.display = 'none';
+            leaveRoom();
+        };
 
         window.leaveRoom = function() {
             if (gamePollTimer) clearInterval(gamePollTimer);
