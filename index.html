@@ -9,7 +9,7 @@
         :root {
             --blue-leather: #16222f;
             --blue-pattern: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
-            --green-table: #145a22;
+            --game-table-bg: #145a22; /* Динамический фон стола */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -99,7 +99,7 @@
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 15px;
-            animation: fadeIn 0.15s ease;
+            animation: fadeIn 0.12s ease;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -108,7 +108,7 @@
             border: 3px solid #34495e; border-radius: 18px; width: 100%; max-width: 400px;
             padding: 20px; position: relative; text-align: center;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;
-            animation: scaleUp 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: scaleUp 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -150,20 +150,22 @@
 
         #lobby-screen {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--green-table);
+            background: var(--game-table-bg);
             background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
             z-index: 50; align-items: center; justify-content: center; padding: 15px;
+            transition: background 0.3s ease;
         }
 
         #game-table-screen {
             display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--green-table);
+            background: var(--game-table-bg);
             background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
             z-index: 50; flex-direction: column; justify-content: space-between;
             padding: 10px;
             overflow: visible !important;
+            transition: background 0.3s ease;
         }
 
         .table-top-bar {
@@ -199,7 +201,7 @@
             margin-left: 65px;
         }
         .battle-pair { 
-            position: relative; width: 62px; height: 88px; animation: popIn 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            position: relative; width: 62px; height: 88px; animation: popIn 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             border: 2px dashed transparent; border-radius: 8px; transition: border-color 0.1s ease;
         }
         .battle-pair.highlight-target {
@@ -214,13 +216,13 @@
             0% { transform: scale(1) translate(0, 0); opacity: 1; }
             100% { transform: scale(0.3) translate(0, -220px); opacity: 0; }
         }
-        .anim-bito { animation: flyToBito 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 150; }
+        .anim-bito { animation: flyToBito 0.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 150; }
 
         @keyframes flyToTake {
             0% { transform: scale(1) translate(0, 0); opacity: 1; }
             100% { transform: scale(0.3) translate(0, 220px); opacity: 0; }
         }
-        .anim-take { animation: flyToTake 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 150; }
+        .anim-take { animation: flyToTake 0.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 150; }
 
         .deck-zone {
             position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
@@ -244,7 +246,6 @@
 
         .game-actions-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 4px; z-index: 80; }
 
-        /* КАЧЕСТВЕННЫЙ И ПЛАВНЫЙ ПОЛЗУНОК НАД КАРТАМИ */
         .player-hand-area {
             width: 100%; background: rgba(0, 0, 0, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.15);
             display: flex; flex-direction: column; align-items: center; padding: 6px 5px 15px 5px; position: relative; z-index: 90;
@@ -275,13 +276,12 @@
             width: 62px; height: 88px; background: #fdfdfd !important; border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column;
             justify-content: space-between; padding: 5px; font-weight: bold; font-size: 13px;
-            cursor: grab; transition: transform 0.1s ease, box-shadow 0.1s ease; position: relative; flex-shrink: 0; border: 1px solid #dcdde1;
+            cursor: grab; transition: transform 0.08s ease, box-shadow 0.08s ease; position: relative; flex-shrink: 0; border: 1px solid #dcdde1;
             will-change: transform;
             z-index: 2;
         }
         .playing-card:active { cursor: grabbing; }
         
-        /* ИСПРАВЛЕНИЕ ОТРЕЗАНИЯ ПРИ ПЕРЕТАСКИВАНИИ: FIXED + ВЫСОКИЙ Z-INDEX */
         .playing-card.dragging {
             opacity: 0.95; 
             transform: scale(1.15); 
@@ -300,6 +300,10 @@
         .card-top-left { display: flex; flex-direction: column; align-items: center; line-height: 1; font-size: 12px; }
         .card-center-suit { font-size: 30px; margin: auto; }
         .card-bottom-right { display: flex; flex-direction: column; align-items: center; line-height: 1; transform: rotate(180deg); font-size: 12px; }
+
+        .rainbow-picker { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        .rainbow-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.4); transition: transform 0.1s; }
+        .rainbow-btn:active { transform: scale(0.9); }
 
         #gameover-modal {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -387,10 +391,25 @@
         <div class="modal-card">
             <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
             <h3 style="color:#f1c40f; margin-top:0;">⚙️ Настройки</h3>
+            
             <div style="font-size: 15px; font-weight: bold; color: #ffeb3b; background: rgba(241, 196, 15, 0.15); padding: 12px; border-radius: 10px; border: 1px solid rgba(241, 196, 15, 0.3); margin: 15px 0;">
                 Вы получите Катю Липко в следующем обновлении
             </div>
-            <div style="font-size: 13px; color: #2ecc71; margin-top: 10px;">Версия 16.3.0 (Fixed Card Clip)</div>
+
+            <div class="game-param-group">
+                <div class="game-param-title">🌈 Цвет фона стола (Радуга):</div>
+                <div class="rainbow-picker">
+                    <div class="rainbow-btn" style="background: #e74c3c;" onclick="setTableBackground('#c0392b')" title="Красный"></div>
+                    <div class="rainbow-btn" style="background: #e67e22;" onclick="setTableBackground('#d35400')" title="Оранжевый"></div>
+                    <div class="rainbow-btn" style="background: #f1c40f;" onclick="setTableBackground('#d4ac0d')" title="Желтый"></div>
+                    <div class="rainbow-btn" style="background: #2ecc71;" onclick="setTableBackground('#145a22')" title="Зеленый (Классика)"></div>
+                    <div class="rainbow-btn" style="background: #00cec9;" onclick="setTableBackground('#008b8b')" title="Голубой"></div>
+                    <div class="rainbow-btn" style="background: #3498db;" onclick="setTableBackground('#1b4f72')" title="Синий"></div>
+                    <div class="rainbow-btn" style="background: #9b59b6;" onclick="setTableBackground('#512e5f')" title="Фиолетовый"></div>
+                </div>
+            </div>
+
+            <div style="font-size: 13px; color: #2ecc71; margin-top: 15px;">Версия 16.4.0 (Anti-Double Tap & Rainbow)</div>
         </div>
     </div>
 
@@ -450,7 +469,7 @@
 
     <!-- Лобби ожидания -->
     <div id="lobby-screen">
-        <div class="modal-card" style="background: var(--green-table); border: 5px solid #0d3811;">
+        <div class="modal-card" style="background: var(--game-table-bg); border: 5px solid rgba(0,0,0,0.3);">
             <button class="modal-close" onclick="leaveRoom()">✕</button>
             <div id="room-header-text" style="font-size: 18px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px;">Стол: Код 0000</div>
             <div id="room-params-info" style="font-size: 13px; color: #eee; margin-bottom: 12px;">Игроков: 1/2</div>
@@ -494,7 +513,6 @@
         </div>
 
         <div class="player-hand-area">
-            <!-- КАЧЕСТВЕННЫЙ ПОЛЗУНОК ПРОКРУТКИ -->
             <input type="range" id="hand-slider" class="hand-scroll-slider" min="0" max="100" value="0" oninput="onHandSliderScroll(this)">
             <div class="hand-cards-scroll-container" id="hand-scroll-box" onscroll="onHandScrollSync(this)">
                 <div class="hand-cards-flex" id="player-hand-container"></div>
@@ -506,7 +524,7 @@
     <div id="gameover-modal" class="modal-overlay">
         <div class="modal-card" style="border: 4px solid #f1c40f;">
             <h2 id="gameover-title" style="color: #f1c40f; margin-top:0; font-size: 24px;">🏆 Победа!</h2>
-            <p id="gameover-text" style="font-size: 15px; color: #eee; margin: 15px 0;">Вы заняли призовое место!</p>
+            <p id="gameover-text" style="font-size: 15px; color: #eee; margin: 15px 0;">Вы выиграли Катю Липко!</p>
             <button class="btn-green" onclick="returnToMenu()" style="width: 100%; padding: 14px; font-size: 16px;">В меню</button>
         </div>
     </div>
@@ -520,6 +538,7 @@
         let myRole = null; 
         let lastRenderStateHash = ""; 
         let isSyncingScroll = false;
+        let isActionInProgress = false; // Защита от дублирования карт
 
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -546,6 +565,11 @@
         let gamePollTimer = null;
 
         const SUIT_RANKS = { '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
+
+        window.setTableBackground = function(color) {
+            document.documentElement.style.setProperty('--game-table-bg', color);
+            document.getElementById('settings-modal').style.display = 'none';
+        };
 
         window.setParam = function(element, category, value) {
             durakSettings[category] = value;
@@ -598,7 +622,6 @@
             return deck;
         }
 
-        // СОРТИРОВКА: КОЗЫРИ ВСЕГДА СЛЕВА И НЕ ПЕРЕМЕЩАЮТСЯ
         function sortPlayerCards(cards, trumpSuit) {
             if (!cards) return [];
             return cards.sort((a, b) => {
@@ -615,7 +638,6 @@
             });
         }
 
-        // ЦВЕТА МАСТЕЙ ПО ТЗ: крести — зеленый, пика — черный, чирва — красный, буба — синий
         function createCardElement(card) {
             let colorClass = 'card-spades';
             if (card.suit === '♥') colorClass = 'card-hearts';       // Чирва: Красный
@@ -750,7 +772,7 @@
                 } else {
                     openLobbyUI(d);
                 }
-            }, 800);
+            }, 700);
         }
 
         window.startGameNow = async function() {
@@ -956,6 +978,7 @@
             let isDragging = false;
 
             function onTouchStart(e) {
+                if (isActionInProgress) return;
                 if (e.touches.length !== 1) return;
                 isDragging = true;
                 const touch = e.touches[0];
@@ -1002,6 +1025,7 @@
             cardEl.addEventListener('touchend', onTouchEnd);
 
             cardEl.addEventListener('mousedown', (e) => {
+                if (isActionInProgress) return;
                 isDragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
@@ -1053,106 +1077,128 @@
         }
 
         async function handleCardDrop(card, clientX, clientY) {
-            const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
-            let room = await res.json();
+            if (isActionInProgress) return;
+            isActionInProgress = true;
 
-            let isAttacker = room.game.attacker === myRole;
-            let isDefender = room.game.defender === myRole;
-            let mode = room.settings.mode;
+            try {
+                const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
+                let room = await res.json();
+                if (!room || !room.game) { isActionInProgress = false; return; }
 
-            let targetPairIdx = -1;
-            const pairs = document.querySelectorAll('.battle-pair');
-            pairs.forEach((pair, idx) => {
-                const rect = pair.getBoundingClientRect();
-                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
-                    targetPairIdx = idx;
+                let isAttacker = room.game.attacker === myRole;
+                let isDefender = room.game.defender === myRole;
+                let mode = room.settings.mode;
+
+                let targetPairIdx = -1;
+                const pairs = document.querySelectorAll('.battle-pair');
+                pairs.forEach((pair, idx) => {
+                    const rect = pair.getBoundingClientRect();
+                    if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                        targetPairIdx = idx;
+                    }
+                });
+
+                let myData = room[myRole];
+                let cardExists = myData.cards.some(c => c.id === card.id);
+                if (!cardExists) {
+                    isActionInProgress = false;
+                    return;
                 }
-            });
 
-            let myData = room[myRole];
+                if (isDefender && targetPairIdx !== -1) {
+                    let targetPair = room.game.tablePairs[targetPairIdx];
+                    if (targetPair && !targetPair.defend) {
+                        let attackCard = targetPair.attack;
+                        let trumpSuit = room.game.trump.suit;
 
-            if (isDefender && targetPairIdx !== -1) {
-                let targetPair = room.game.tablePairs[targetPairIdx];
-                if (targetPair && !targetPair.defend) {
-                    let attackCard = targetPair.attack;
-                    let trumpSuit = room.game.trump.suit;
+                        let canBeat = false;
+                        if (card.suit === attackCard.suit && card.val > attackCard.val) canBeat = true;
+                        else if (card.suit === trumpSuit && attackCard.suit !== trumpSuit) canBeat = true;
 
-                    let canBeat = false;
-                    if (card.suit === attackCard.suit && card.val > attackCard.val) canBeat = true;
-                    else if (card.suit === trumpSuit && attackCard.suit !== trumpSuit) canBeat = true;
+                        if (!canBeat) {
+                            alert("Этой картой нельзя побить!");
+                            isActionInProgress = false;
+                            return;
+                        }
 
-                    if (!canBeat) {
-                        alert("Этой картой нельзя побить!");
+                        myData.cards = myData.cards.filter(c => c.id !== card.id);
+                        targetPair.defend = card;
+                        room.game.statusText = `Отбито!`;
+                        
+                        checkWinConditions(room);
+                        room[myRole] = myData;
+                        lastRenderStateHash = "";
+                        await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                        });
+                        renderGameTable(room);
+                        isActionInProgress = false;
                         return;
+                    }
+                }
+
+                if (isAttacker) {
+                    let tablePairs = room.game.tablePairs || [];
+                    if (tablePairs.length > 0) {
+                        let tableRanks = [];
+                        tablePairs.forEach(p => {
+                            tableRanks.push(p.attack.rank);
+                            if (p.defend) tableRanks.push(p.defend.rank);
+                        });
+                        if (!tableRanks.includes(card.rank)) {
+                            alert("Можно подкидывать только карты тех рангов, что есть на столе!");
+                            isActionInProgress = false;
+                            return;
+                        }
                     }
 
                     myData.cards = myData.cards.filter(c => c.id !== card.id);
-                    targetPair.defend = card;
-                    room.game.statusText = `Отбито!`;
-                    
-                    checkWinConditions(room);
-                    room[myRole] = myData;
-                    lastRenderStateHash = "";
-                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
-                    });
-                    renderGameTable(room);
-                    return;
-                }
-            }
+                    tablePairs.push({ attack: card, defend: null });
+                    room.game.tablePairs = tablePairs;
+                    room.game.statusText = `Ждем ответа...`;
+                } else if (isDefender) {
+                    let canPerevodMode = (mode === 'perevodnoy' || mode === 'perevodnoy-podkidnoy');
+                    let firstPair = room.game.tablePairs[0];
+                    if (canPerevodMode && firstPair && !firstPair.defend && card.rank === firstPair.attack.rank) {
+                        myData.cards = myData.cards.filter(c => c.id !== card.id);
+                        room.game.tablePairs.push({ attack: card, defend: null });
+                        
+                        let players = room.game.playersList;
+                        let currentDefIdx = players.indexOf(room.game.defender);
+                        let nextDefIdx = (currentDefIdx + 1) % players.length;
+                        room.game.attacker = room.game.defender;
+                        room.game.defender = players[nextDefIdx];
+                        room.game.statusText = `Ход переведен! Отбивается ${room[room.game.defender].name}`;
 
-            if (isAttacker) {
-                let tablePairs = room.game.tablePairs || [];
-                if (tablePairs.length > 0) {
-                    let tableRanks = [];
-                    tablePairs.forEach(p => {
-                        tableRanks.push(p.attack.rank);
-                        if (p.defend) tableRanks.push(p.defend.rank);
-                    });
-                    if (!tableRanks.includes(card.rank)) {
-                        alert("Можно подкидывать только карты тех рангов, что есть на столе!");
+                        room[myRole] = myData;
+                        lastRenderStateHash = "";
+                        await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                        });
+                        renderGameTable(room);
+                        isActionInProgress = false;
                         return;
                     }
                 }
 
-                myData.cards = myData.cards.filter(c => c.id !== card.id);
-                tablePairs.push({ attack: card, defend: null });
-                room.game.tablePairs = tablePairs;
-                room.game.statusText = `Ждем ответа...`;
-            } else if (isDefender) {
-                let canPerevodMode = (mode === 'perevodnoy' || mode === 'perevodnoy-podkidnoy');
-                let firstPair = room.game.tablePairs[0];
-                if (canPerevodMode && firstPair && !firstPair.defend && card.rank === firstPair.attack.rank) {
-                    myData.cards = myData.cards.filter(c => c.id !== card.id);
-                    room.game.tablePairs.push({ attack: card, defend: null });
-                    
-                    let players = room.game.playersList;
-                    let currentDefIdx = players.indexOf(room.game.defender);
-                    let nextDefIdx = (currentDefIdx + 1) % players.length;
-                    room.game.attacker = room.game.defender;
-                    room.game.defender = players[nextDefIdx];
-                    room.game.statusText = `Ход переведен! Отбивается ${room[room.game.defender].name}`;
-
-                    room[myRole] = myData;
-                    lastRenderStateHash = "";
-                    await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
-                    });
-                    renderGameTable(room);
-                    return;
-                }
+                checkWinConditions(room);
+                room[myRole] = myData;
+                lastRenderStateHash = ""; 
+                await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
+                });
+                renderGameTable(room);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setTimeout(() => { isActionInProgress = false; }, 200);
             }
-
-            checkWinConditions(room);
-            room[myRole] = myData;
-            lastRenderStateHash = ""; 
-            await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`, {
-                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
-            });
-            renderGameTable(room);
         }
 
         async function actionBito() {
+            if (isActionInProgress) return;
+            isActionInProgress = true;
+
             const battleArea = document.getElementById('battle-pairs-area');
             battleArea.classList.add('anim-bito');
             setTimeout(async () => {
@@ -1160,6 +1206,7 @@
                 
                 const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
                 let room = await res.json();
+                if (!room || !room.game) { isActionInProgress = false; return; }
 
                 room.game.tablePairs = [];
                 let deck = room.game.deck || [];
@@ -1184,10 +1231,14 @@
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
                 });
                 renderGameTable(room);
-            }, 250);
+                isActionInProgress = false;
+            }, 200);
         }
 
         async function actionTake() {
+            if (isActionInProgress) return;
+            isActionInProgress = true;
+
             const battleArea = document.getElementById('battle-pairs-area');
             battleArea.classList.add('anim-take');
             setTimeout(async () => {
@@ -1195,6 +1246,7 @@
 
                 const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
                 let room = await res.json();
+                if (!room || !room.game) { isActionInProgress = false; return; }
 
                 let defData = room[room.game.defender];
                 let attData = room[room.game.attacker];
@@ -1227,18 +1279,25 @@
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
                 });
                 renderGameTable(room);
-            }, 250);
+                isActionInProgress = false;
+            }, 200);
         }
 
         async function actionPerevod() {
+            if (isActionInProgress) return;
+            isActionInProgress = true;
+
             const res = await fetch(`${DATABASE_URL}/rooms/${currentRoomCode}.json`);
             let room = await res.json();
+            if (!room || !room.game) { isActionInProgress = false; return; }
+
             let myData = room[myRole];
             let attackCard = room.game.tablePairs[0].attack;
 
             let matchCard = myData.cards.find(c => c.rank === attackCard.rank);
             if (!matchCard) {
                 alert("У вас нет карты такого же достоинства для перевода!");
+                isActionInProgress = false;
                 return;
             }
 
@@ -1259,6 +1318,7 @@
                 method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(room)
             });
             renderGameTable(room);
+            isActionInProgress = false;
         }
 
         function showGameOverModal(room) {
@@ -1273,7 +1333,7 @@
             } else {
                 title.innerText = "🏆 Победа!";
                 title.style.color = "#2ecc71";
-                text.innerText = "Поздравляем! Вы успешно избавились от всех карт!";
+                text.innerText = "Вы выиграли Катю Липко!";
             }
             modal.style.display = 'flex';
         }
