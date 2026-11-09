@@ -163,6 +163,7 @@
             background-size: 20px 20px;
             z-index: 50; flex-direction: column; justify-content: space-between;
             padding: 10px;
+            overflow: visible !important;
         }
 
         .table-top-bar {
@@ -190,10 +191,12 @@
         .table-center-felt {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             position: relative; margin: 2px 0;
+            overflow: visible !important;
         }
         
         .battle-pairs-container {
-            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 95%; min-height: 110px; align-items: center;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 90%; min-height: 110px; align-items: center;
+            margin-left: 65px;
         }
         .battle-pair { 
             position: relative; width: 62px; height: 88px; animation: popIn 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
@@ -220,21 +223,23 @@
         .anim-take { animation: flyToTake 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 150; }
 
         .deck-zone {
-            position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+            position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
             display: flex; flex-direction: column; align-items: center; gap: 4px;
+            z-index: 5;
         }
-        .deck-stack-wrapper { position: relative; width: 60px; height: 84px; }
+        .deck-stack-wrapper { position: relative; width: 56px; height: 78px; }
         .deck-stack {
-            width: 56px; height: 78px; background: #1a2733; border: 2px solid #fff; border-radius: 8px;
+            width: 52px; height: 72px; background: #1a2733; border: 2px solid #fff; border-radius: 8px;
             position: absolute; top:0; left:0; z-index: 2; box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 6px 6px;
         }
-        .trump-card-slot { position: absolute; top: 0; left: 18px; transform: rotate(90deg); z-index: 1; }
+        .trump-card-slot { position: absolute; top: 0; left: 16px; transform: rotate(90deg); z-index: 1; }
 
         .game-status-banner {
             background: rgba(0,0,0,0.65); padding: 6px 14px; border-radius: 10px;
             font-size: 12px; font-weight: bold; color: #ffeb3b; margin-bottom: 6px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.4); border: 1px solid rgba(255,235,59,0.3);
+            z-index: 10;
         }
 
         .game-actions-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 4px; z-index: 80; }
@@ -243,6 +248,7 @@
         .player-hand-area {
             width: 100%; background: rgba(0, 0, 0, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.15);
             display: flex; flex-direction: column; align-items: center; padding: 6px 5px 15px 5px; position: relative; z-index: 90;
+            overflow: visible !important;
         }
         
         .hand-scroll-slider {
@@ -257,12 +263,13 @@
 
         .hand-cards-scroll-container {
             width: 100%; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; display: flex; justify-content: flex-start; padding: 4px 10px;
-            scroll-behavior: auto; /* убираем лаг задержки плавного скролла при программном изменении */
+            scroll-behavior: auto;
             -webkit-overflow-scrolling: touch;
+            overflow-y: visible !important;
         }
         .hand-cards-scroll-container::-webkit-scrollbar { display: none; }
         
-        .hand-cards-flex { display: flex; gap: 8px; justify-content: flex-start; align-items: center; min-width: max-content; margin: 0 auto; }
+        .hand-cards-flex { display: flex; gap: 8px; justify-content: flex-start; align-items: center; min-width: max-content; margin: 0 auto; overflow: visible; }
 
         .playing-card {
             width: 62px; height: 88px; background: #fdfdfd !important; border-radius: 8px;
@@ -270,11 +277,18 @@
             justify-content: space-between; padding: 5px; font-weight: bold; font-size: 13px;
             cursor: grab; transition: transform 0.1s ease, box-shadow 0.1s ease; position: relative; flex-shrink: 0; border: 1px solid #dcdde1;
             will-change: transform;
+            z-index: 2;
         }
         .playing-card:active { cursor: grabbing; }
+        
+        /* ИСПРАВЛЕНИЕ ОТРЕЗАНИЯ ПРИ ПЕРЕТАСКИВАНИИ: FIXED + ВЫСОКИЙ Z-INDEX */
         .playing-card.dragging {
-            opacity: 0.9; transform: scale(1.12); z-index: 1000; position: fixed; pointer-events: none;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.8);
+            opacity: 0.95; 
+            transform: scale(1.15); 
+            z-index: 99999 !important; 
+            position: fixed !important; 
+            pointer-events: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.85);
         }
         
         /* ЦВЕТА МАСТЕЙ ПО ТЗ: крести — зеленый, пика — черный, чирва — красный, буба — синий */
@@ -376,7 +390,7 @@
             <div style="font-size: 15px; font-weight: bold; color: #ffeb3b; background: rgba(241, 196, 15, 0.15); padding: 12px; border-radius: 10px; border: 1px solid rgba(241, 196, 15, 0.3); margin: 15px 0;">
                 Вы получите Катю Липко в следующем обновлении
             </div>
-            <div style="font-size: 13px; color: #2ecc71; margin-top: 10px;">Версия 16.2.0 (Ultra Smooth Slider)</div>
+            <div style="font-size: 13px; color: #2ecc71; margin-top: 10px;">Версия 16.3.0 (Fixed Card Clip)</div>
         </div>
     </div>
 
@@ -505,7 +519,7 @@
         let photoUrl = null;
         let myRole = null; 
         let lastRenderStateHash = ""; 
-        let isSyncingScroll = false; // Защита от зацикливания и лагов прокрутки
+        let isSyncingScroll = false;
 
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -916,7 +930,6 @@
             document.getElementById('btn-perevod').style.display = canPerevod ? 'inline-block' : 'none';
         }
 
-        // БЕЗУПРЕЧНО ПЛАВНЫЙ И КАЧЕСТВЕННЫЙ СИНХРОННЫЙ СКРОЛЛ
         window.onHandSliderScroll = function(slider) {
             const scrollBox = document.getElementById('hand-scroll-box');
             if (!scrollBox) return;
