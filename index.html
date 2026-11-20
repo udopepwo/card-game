@@ -427,6 +427,19 @@ h3{color:var(--gold);margin:0 0 12px;font-size:18px;letter-spacing:.5px}
 .card.jk::after{content:'★';position:absolute;right:3px;top:1px;font-size:calc(var(--cw,40px)*.22);color:#e9a400;line-height:1}
 .czin{animation:czin .42s cubic-bezier(.2,.85,.25,1) both}@keyframes czin{from{transform:translateY(-70px) scale(.55) rotate(-14deg);opacity:0}to{transform:none;opacity:1}}
 
+.bdg{display:block;margin:0 auto}
+.rk-row{grid-template-columns:auto 1fr auto!important;align-items:center;cursor:pointer;padding:7px 11px!important}
+.rk-b{grid-row:1;display:flex}.rk-mid{display:flex;flex-direction:column;gap:1px}.rk-mid .rk-t{font-size:12px}
+.gs2-tabs{display:flex;gap:6px;justify-content:center;margin:2px 26px 8px 0}.gs2-tabs button{width:40px;height:40px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);font-size:18px;padding:0}
+.gs2-tabs button.on{border-color:var(--gold);background:rgba(233,196,106,.18);box-shadow:0 0 12px rgba(233,196,106,.35)}
+.gs2-hero{text-align:center;padding:6px 0 2px}.gs2-bd{animation:bmbounce 3s ease-in-out infinite;margin:4px 0}
+.gs2-hero h2{margin:8px 0 0;font-size:20px;font-family:'Playfair Display',Georgia,serif}.gs2-tn{font-size:26px;font-weight:900;color:var(--gold);margin:2px 0 8px}
+.rk-bar.big{height:8px;border-radius:4px;margin:0 6px}.gs2-nx{font-size:12px;color:#9fb0c3;margin-top:6px}
+.gs2-lad{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0}
+.lad{display:flex;flex-direction:column;align-items:center;padding:5px 0;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid transparent}
+.lad small{font-size:9px;margin-top:2px}.lad em{font-style:normal;font-size:9px;color:#7f90a3}
+.lad.cur{border-color:var(--gold);background:rgba(233,196,106,.14)}.lad.lock{opacity:.4;filter:grayscale(.7)}
+.gs2-nav{display:flex;align-items:center;justify-content:space-between;color:#9fb0c3;font-size:12px}.gs2-nav .b{padding:8px 18px}
 </style>
 </head>
 <body>
@@ -460,6 +473,8 @@ h3{color:var(--gold);margin:0 0 12px;font-size:18px;letter-spacing:.5px}
 </div>
 
 <div id="stats-modal" class="modal"><div class="card-m"><button class="x" onclick="closeM('stats-modal')">✕</button><h3>🏆 Звания и победы</h3><div class="stats" id="stats-grid"></div><div id="rank-list"></div></div></div>
+
+<div id="gs2-modal" class="modal" style="z-index:150"><div class="card-m"><button class="x" onclick="closeM('gs2-modal')">✕</button><div id="gs2-body"></div></div></div>
 
 <div id="friends-modal" class="modal"><div class="card-m"><button class="x" onclick="closeM('friends-modal')">✕</button>
  <h3>👥 Друзья</h3>
@@ -1623,7 +1638,35 @@ const avaHTML=(p,fb)=>p&&p.photo?`<img src="${esc(p.photo)}" alt="">`:esc(fb||(p
 /* ---- v23: список игр, звания, бонус, вход ---- */
 const GI={durak:{n:'Дурак',ic:'🃏',min:2,max:8},chest:{n:'Сундучок',ic:'🧰',min:2,max:6},poker:{n:'Покер',ic:'♠️',min:2,max:8,cash:1},bj:{n:'Блэкджек',ic:'♦️',min:1,max:5,cash:1},seka:{n:'Сека',ic:'🎴',min:2,max:6,cash:1}};
 const GAMES=['durak','chest','poker','bj','seka'];
-const TIERS=[[0,'Новичок','🎲'],[3,'Бронза','🥉'],[10,'Серебро','🥈'],[25,'Золото','🥇'],[60,'Платина','💠'],[120,'Алмаз','💎'],[250,'Легенда','👑']];
+/* звания: [побед, название, эмодзи, [светлый, средний, тёмный], вид, значок] */
+const TIERS=[
+ [0,'Новичок','🎲',['#c5ccd4','#8d98a5','#4a5460'],'s',''],
+ [3,'Бронза','🥉',['#f3c08a','#cd7f32','#7a4a1a'],'s','★'],
+ [10,'Серебро','🥈',['#ffffff','#bcc5ce','#6d7782'],'s','★'],
+ [25,'Золото','🥇',['#fff4b0','#e9b730','#9a6a0c'],'s','★'],
+ [50,'Платина','💠',['#effcff','#8fd3e6','#3f7f95'],'s','✦'],
+ [90,'Алмаз','💎',['#e6f9ff','#4fc3f7','#1565c0'],'g',''],
+ [150,'Изумруд','🟢',['#c4ffdd','#2ecc71','#0b6b3a'],'g',''],
+ [250,'Мастер I','👑',['#ffe0f8','#c04bff','#4a1180'],'m','I'],
+ [400,'Мастер II','👑',['#ffd6d6','#ff4d6d','#7a0d2a'],'m','II'],
+ [600,'Мастер III','👑',['#fff4b0','#ff9f1c','#a1260b'],'m','III']];
+let _bid=0;
+function badge(i,size){
+  const T=TIERS[Math.max(0,Math.min(TIERS.length-1,i))],c=T[3],k=T[4],id='bg'+(++_bid);
+  const defs=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".5" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient></defs>`;
+  let body;
+  if(k==='g'){
+    body=`<path d="M28 18H72L94 46L50 100L6 46Z" fill="url(#${id})" stroke="${c[2]}" stroke-width="3" stroke-linejoin="round"/><path d="M6 46H94M28 18L40 46L50 100L60 46L72 18M40 46L50 18L60 46" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2"/><path d="M28 18L40 46H6Z" fill="#fff" fill-opacity=".28"/>`;
+  }else{
+    const shield='M50 4L90 17V52C90 80 70 97 50 106C30 97 10 80 10 52V17Z';
+    body=`<path d="${shield}" fill="url(#${id})" stroke="${c[2]}" stroke-width="3.5" stroke-linejoin="round"/><path d="M50 12L82 22V52C82 74 66 88 50 96C34 88 18 74 18 52V22Z" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"/><path d="${shield}" fill="#fff" fill-opacity=".14" transform="translate(-2 -2) scale(.5 .45) translate(50 14)" opacity="0"/>`;
+    if(k==='m')body+=`<path d="M28 52L34 32L44 44L50 28L56 44L66 32L72 52Z" fill="#fff" fill-opacity=".92" stroke="${c[2]}" stroke-width="2" stroke-linejoin="round"/><text x="50" y="80" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="${T[5].length>2?20:24}" fill="#fff" stroke="${c[2]}" stroke-width=".8">${T[5]}</text>`;
+    else if(T[5])body+=`<text x="50" y="68" text-anchor="middle" font-size="40" fill="#fff" fill-opacity=".92" stroke="${c[2]}" stroke-width="1.5" paint-order="stroke">${T[5]}</text>`;
+    else body+=`<circle cx="50" cy="56" r="9" fill="#fff" fill-opacity=".6"/>`;
+  }
+  const glow=T[4]==='m'||T[4]==='g'?` style="filter:drop-shadow(0 0 7px ${c[1]})"`:'';
+  return `<svg class="bdg" width="${size}" height="${Math.round(size*1.1)}" viewBox="0 0 100 110"${glow}>${defs}${body}</svg>`;
+}
 function tierOf(w){
   w=num(w);let i=0;TIERS.forEach((t,k)=>{if(w>=t[0])i=k;});
   const t=TIERS[i],nx=TIERS[i+1]||null;
@@ -1636,12 +1679,31 @@ function topRank(st,w){
   const t=tierOf(bw);return `${t.ic} ${t.n} · ${GI[best].n}`;
 }
 const rankOf=w=>{const t=tierOf(w);return `${t.ic} ${t.n}`;};
-function ranksHTML(st){
-  return `<div class="rklist">${GAMES.map(g=>{
+/* список игр со значками; нажатие открывает окно игры */
+function ranksHTML(st,mine){
+  S.gv={st,mine:!!mine};
+  return `<div class="rklist">${GAMES.map((g,ix)=>{
     const s=stOf(st,g),t=tierOf(s.w);
-    return `<div class="rk-row"><span class="rk-g">${GI[g].ic} ${GI[g].n}</span><span class="rk-t">${t.ic} ${t.n}</span><span class="rk-w">${s.w} поб.</span><div class="rk-bar"><i style="width:${t.pct}%"></i></div>${t.next!=null?`<div class="rk-nx">До «${TIERS[t.i+1][1]}» ${TIERS[t.i+1][2]} — ещё ${t.next-s.w} поб.</div>`:'<div class="rk-nx">Высшее звание</div>'}</div>`;
+    return `<div class="rk-row" onclick="openGameStat(${ix})"><div class="rk-b">${badge(t.i,34)}</div><div class="rk-mid"><span class="rk-g">${GI[g].ic} ${GI[g].n}</span><span class="rk-t">${t.n}</span></div><span class="rk-w">${s.w} поб. ❯</span></div>`;
   }).join('')}</div>`;
 }
+/* окно одной игры: листается свайпом и стрелками */
+function openGameStat(ix){
+  const v=S.gv;if(!v)return;v.ix=((ix%GAMES.length)+GAMES.length)%GAMES.length;
+  const g=GAMES[v.ix],s=stOf(v.st,g),t=tierOf(s.w),tot=s.w+s.l+s.t,wr=tot?Math.round(s.w/tot*100):0;
+  const nx=t.next!=null?TIERS[t.i+1]:null;
+  $('gs2-body').innerHTML=`
+   <div class="gs2-tabs">${GAMES.map((k,j)=>`<button class="${j===v.ix?'on':''}" onclick="openGameStat(${j})">${GI[k].ic}</button>`).join('')}</div>
+   <div class="gs2-hero"><div class="gs2-bd">${badge(t.i,112)}</div><h2>${GI[g].ic} ${GI[g].n}</h2><div class="gs2-tn">${t.n}</div>
+   <div class="rk-bar big"><i style="width:${t.pct}%"></i></div>
+   <div class="gs2-nx">${nx?`До «${nx[1]}»: ещё ${t.next-s.w} поб. (${s.w}/${t.next})`:'Высшее звание достигнуто'}</div></div>
+   <div class="stats" style="grid-template-columns:repeat(4,1fr)"><div class="st"><b>${s.w}</b><span>Побед</span></div><div class="st"><b>${s.l}</b><span>Пораж.</span></div><div class="st"><b>${s.t}</b><span>Ничьих</span></div><div class="st"><b>${wr}%</b><span>Винрейт</span></div></div>
+   <div class="gs2-lad">${TIERS.map((T,j)=>`<div class="lad${j===t.i?' cur':''}${j>t.i?' lock':''}">${badge(j,38)}<small>${T[1]}</small><em>${T[0]}</em></div>`).join('')}</div>
+   <div class="gs2-nav"><button class="b" onclick="openGameStat(${v.ix-1})">❮</button><span>${v.ix+1} / ${GAMES.length}</span><button class="b" onclick="openGameStat(${v.ix+1})">❯</button></div>`;
+  if($('gs2-modal').style.display!=='flex')openM('gs2-modal');
+}
+(function(){let x0=null;document.addEventListener('touchstart',e=>{x0=e.target.closest&&e.target.closest('#gs2-modal .card-m')?e.touches[0].clientX:null;},{passive:true});
+ document.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>60&&S.gv&&$('gs2-modal').style.display==='flex')openGameStat(S.gv.ix+(dx<0?1:-1));},{passive:true});})();
 function recordGame(game,res){
   const s=prof.st[game]=prof.st[game]||{w:0,l:0,t:0},before=tierOf(s.w).i;
   if(res==='win'){s.w++;prof.wins++;}else if(res==='loss'){s.l++;prof.losses++;}else s.t++;
@@ -1651,7 +1713,7 @@ function recordGame(game,res){
 function announceTier(){
   const u=S.tierUp;if(!u)return;S.tierUp=null;
   const d=document.createElement('div');d.className='tierup';
-  d.innerHTML=`<span>${u.t.ic}</span><div><small>Новое звание · ${GI[u.game].n}</small><b>${u.t.n}</b></div>`;
+  d.innerHTML=`<span>${badge(u.t.i,44)}</span><div><small>Новое звание · ${GI[u.game].n}</small><b>${u.t.n}</b></div>`;
   document.body.appendChild(d);
   try{if(prof.sound!==false)[523,659,784,1047].forEach((f,i)=>tone(f,i*.1,.3,'triangle',.12));buzz('heavy');}catch(e){}
   setTimeout(()=>d.remove(),4300);
@@ -1739,7 +1801,7 @@ function statsHTML(w,l,g){const wr=g?Math.round(w/g*100):0;return `<div class="s
 function openStats(){
   if(me.guest)return guestMsg();
   $('stats-grid').innerHTML=statsHTML(prof.wins,prof.losses,prof.games);
-  $('rank-list').innerHTML=`<div class="st" style="margin-bottom:6px"><b>🪙 ${fmt(prof.chips)}</b><span>Баланс</span></div>`+ranksHTML(prof.st);
+  $('rank-list').innerHTML=`<div class="st" style="margin-bottom:6px"><b>🪙 ${fmt(prof.chips)}</b><span>Баланс</span></div><div style="font-size:11px;color:#9fb0c3;margin:4px 0">Нажмите на игру — откроется её статистика и звание</div>`+ranksHTML(prof.st,true);
   openM('stats-modal');
 }
 function buildOpts(id,items,cur,onPick){
@@ -2522,6 +2584,7 @@ async function openUser(uid){
   let pending=false;if(!isFriend&&!theyAsked){try{pending=!!(await dbGet(`inbox/${uid}/requests/${me.uid}`));}catch(e){}}
   if(S.userOpen===uid)renderUserModal(u,{isFriend,theyAsked,pending});
 }
+function openUserStats(){S.gv={st:S.uSt||{},mine:false};openGameStat(0);}
 function renderUserModal(u,o){
   const id=esc(u.uid),w=num(u.wins),l=num(u.losses),g=num(u.games);
   let btns='';
@@ -2534,7 +2597,7 @@ function renderUserModal(u,o){
   }else btns=`<button class="gold" onclick="closeM('user-modal');openFriends()">👥 Мои друзья</button>`;
   $('u-body').innerHTML=`<div class="ava big">${avaHTML(u)}</div><h3 style="margin:0">${esc(u.name||'Игрок')}</h3>
    <div style="font-size:12px;color:#9fb0c3;margin-top:3px">${u.username?'@'+esc(u.username)+' · ':''}${topRank(u.st,w)}${o.isMe?'':` · <i class="dot ${isOnline(u)?'on':''}"></i>${isOnline(u)?'в сети':'не в сети'}`}</div>
-   <div class="stats">${statsHTML(w,l,g)}</div>${ranksHTML(u.st)}<div class="ubtns">${btns}</div>`;
+   <div class="stats">${statsHTML(w,l,g)}</div><button class="b" style="width:100%;margin-bottom:8px" onclick="openUserStats()">📊 Статистика игр</button><div class="ubtns">${btns}</div>`;S.uSt=u.st||{};
 }
 $('user-modal').addEventListener('click',async e=>{
   const b=e.target.closest('[data-act]');if(!b)return;const uid=S.userOpen,act=b.dataset.act;
